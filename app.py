@@ -40,25 +40,30 @@ else:
 
     with col_hist:
         st.subheader("📜 Historique")
-        with st.container(height=500):
+        with st.container(height=550):
             for log in g['history']: st.caption(log)
 
     with col_main:
-        # ZONE IA (SYMÉTRIQUE HAUT)
+        # --- ZONE IA (SYMÉTRIE HAUT) ---
         with st.container(border=True):
-            c1, c2 = st.columns([1, 2])
+            c1, c2, c3 = st.columns([1, 2, 1])
             with c1: # Bibliothèque et Cimetière IA
                 st.caption(f"📚 IA: ??/60")
                 with st.expander(f"💀 Cimetière IA ({len(g['ai_graveyard'])})"):
                     st.write(stats_cimet(g['ai_graveyard']))
-            with c2:
-                st.write(f"🖥️ **KAEL** - ❤️ {g['ai_hp']} PV")
-                st.caption("🎴 " * g['ai_hand_count'])
+            with c2: # Centre : Nom et PV
+                st.markdown(f"<center>🖥️ <b>KAEL</b> - ❤️ {g['ai_hp']} PV</center>", unsafe_allow_html=True)
+            
+            # Main de l'IA centrée (Symétrie avec tes boutons)
+            st.write("")
+            ai_hand_cols = st.columns(max(g['ai_hand_count'], 1))
+            for i in range(g['ai_hand_count']):
+                ai_hand_cols[i].button("🎴", key=f"ai_h_{i}", disabled=True, use_container_width=True)
             
             st.divider()
             st.write(f"⛰️ Terrains: {len(g['ai_land'])} | 👹 Board: {len(g['ai_board'])}")
 
-        # ZONE DE COMBAT
+        # --- ZONE DE COMBAT ---
         st.write("")
         with st.container(height=150, border=True):
             if g['stack']:
@@ -75,26 +80,29 @@ else:
                         g['stack'] = None
                         st.rerun()
             else:
-                st.write("Le champ est libre...")
+                st.markdown("<center>Le champ est libre...</center>", unsafe_allow_html=True)
 
-        # ZONE JOUEUR (SYMÉTRIQUE BAS)
+        # --- ZONE JOUEUR (SYMÉTRIE BAS) ---
         with st.container(border=True):
             st.write(f"⚔️ Board: {len(g['p_board'])} | 🛡️ Terrains: {len(g['p_land'])}")
             st.divider()
             
-            c3, c4 = st.columns([2, 1])
-            with c3:
-                st.write(f"👤 **STEEVEN** - ❤️ {g['p_hp']} PV")
-                cols_h = st.columns(len(g['p_hand']))
-                for i, card in enumerate(g['p_hand']):
-                    if cols_h[i].button(card, key=f"p_{i}"):
-                        if card == "Island": g['p_land'].append(g['p_hand'].pop(i))
-                        elif card == "Counterspell" and g['stack']:
-                            g['p_graveyard'].append(g['p_hand'].pop(i))
-                            g['ai_graveyard'].append(g['stack'])
-                            g['stack'] = None
-                        st.rerun()
-            with c4: # Bibliothèque et Cimetière Joueur
+            # Main du joueur centrée
+            p_hand_cols = st.columns(max(len(g['p_hand']), 1))
+            for i, card in enumerate(g['p_hand']):
+                if p_hand_cols[i].button(card, key=f"p_{i}", use_container_width=True):
+                    if card == "Island": g['p_land'].append(g['p_hand'].pop(i))
+                    elif card == "Counterspell" and g['stack']:
+                        g['p_graveyard'].append(g['p_hand'].pop(i))
+                        g['ai_graveyard'].append(g['stack'])
+                        g['stack'] = None
+                    st.rerun()
+            
+            st.write("")
+            c_low1, c_low2, c_low3 = st.columns([1, 2, 1])
+            with c_low2: # Centre : Nom et PV
+                st.markdown(f"<center>👤 <b>STEEVEN</b> - ❤️ {g['p_hp']} PV</center>", unsafe_allow_html=True)
+            with c_low3: # Bibliothèque et Cimetière Joueur
                 st.caption(f"📚 Ma Bibli: {len(g['p_deck'])}")
                 with st.expander(f"💀 Mon Cimetière ({len(g['p_graveyard'])})"):
                     st.write(stats_cimet(g['p_graveyard']))

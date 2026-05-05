@@ -2,70 +2,47 @@ import streamlit as st
 import time
 import random
 
+# --- CONFIGURATION PAGE ---
 st.set_page_config(page_title="Magic Arena Pro", layout="wide")
 
-# --- BASE DE DONNÉES DES CARTES (Cerveau) ---
-# On définit ici les types et propriétés pour que l'IA puisse "réfléchir"
+# --- BASE DE DONNÉES DES CARTES ---
 CARDS_DB = {
-    # Deck Steeven (Mill)
-    "Hedron Crab": {"type": "Monstre", "mana": "💧", "attr": "Mill 3"},
-    "Glimpse the Unthinkable": {"type": "Sort", "mana": "💧💀", "attr": "Mill 10"},
-    "Archive Trap": {"type": "Sort", "mana": "5💧", "attr": "Mill 13"},
-    "Tasha's Hideous Laughter": {"type": "Sort", "mana": "1💧💀", "attr": "Mill X"},
-    "Jace's Phantasm": {"type": "Monstre", "mana": "💧", "attr": "5/5 if 10+ cards"},
-    "Dark Ritual": {"type": "Sort", "mana": "💀", "attr": "Add 3 Mana"},
-    "Visions of Beyond": {"type": "Sort", "mana": "💧", "attr": "Draw 1 or 3"},
-    "Polluted Delta": {"type": "Terrain", "mana": "0", "attr": "Fetch"},
-    "Watery Grave": {"type": "Terrain", "mana": "0", "attr": "Dual Land"},
-    "Island": {"type": "Terrain", "mana": "0", "attr": "Mana 💧"},
-    "Swamp": {"type": "Terrain", "mana": "0", "attr": "Mana 💀"},
-    
-    # Deck Kael (Control)
-    "Archimage's Charm": {"type": "Sort", "mana": "💧💧💧", "attr": "Counter/Draw/Steal"},
-    "Counterspell": {"type": "Sort", "mana": "💧💧", "attr": "Counter"},
-    "Guile": {"type": "Monstre", "mana": "3💧💧💧", "attr": "6/6 & Steal Counters"},
-    "Opt": {"type": "Sort", "mana": "💧", "attr": "Scry 1 Draw 1"},
-    "Mana Leak": {"type": "Sort", "mana": "1💧", "attr": "Counter unless 3"},
-    "Negate": {"type": "Sort", "mana": "1💧", "attr": "Counter non-creature"},
-    "Essence Scatter": {"type": "Sort", "mana": "1💧", "attr": "Counter creature"},
-    "Various Draw": {"type": "Sort", "mana": "2💧", "attr": "Draw 2"}
+    "Hedron Crab": {"type": "Monstre"},
+    "Glimpse the Unthinkable": {"type": "Sort"},
+    "Archive Trap": {"type": "Sort"},
+    "Tasha's Hideous Laughter": {"type": "Sort"},
+    "Jace's Phantasm": {"type": "Monstre"},
+    "Dark Ritual": {"type": "Sort"},
+    "Visions of Beyond": {"type": "Sort"},
+    "Polluted Delta": {"type": "Terrain"},
+    "Watery Grave": {"type": "Terrain"},
+    "Island": {"type": "Terrain"},
+    "Swamp": {"type": "Terrain"},
+    "Archimage's Charm": {"type": "Sort"},
+    "Counterspell": {"type": "Sort"},
+    "Guile": {"type": "Monstre"},
+    "Opt": {"type": "Sort"},
+    "Mana Leak": {"type": "Sort"},
+    "Negate": {"type": "Sort"},
+    "Essence Scatter": {"type": "Sort"},
+    "Various Draw": {"type": "Sort"}
 }
 
-# --- INITIALISATION ---
-if 'game' not in st.session_state:
-    # Construction du deck Steeven (60 cartes)
-    steeven_deck = (["Hedron Crab"]*4 + ["Glimpse the Unthinkable"]*4 + ["Archive Trap"]*4 + 
-                    ["Tasha's Hideous Laughter"]*4 + ["Jace's Phantasm"]*4 + ["Dark Ritual"]*4 + 
-                    ["Visions of Beyond"]*3 + ["Polluted Delta"]*4 + ["Watery Grave"]*4 + 
-                    ["Island"]*11 + ["Swamp"]*11 + ["Opt"]*3)
-    
-    # Construction du deck Kael (60 cartes)
-    kael_deck = (["Archimage's Charm"]*4 + ["Counterspell"]*4 + ["Guile"]*2 + ["Opt"]*4 + 
-                 ["Mana Leak"]*4 + ["Negate"]*4 + ["Essence Scatter"]*4 + ["Visions of Beyond"]*4 + 
-                 ["Island"]*24 + ["Various Draw"]*6)
-
-    st.session_state.game = {
-        'p_hp': 20, 'ai_hp': 20,
-        'p_deck': steeven_deck,
-        'ai_deck': kael_deck,
-        'p_hand': [], 'p_land': [], 'p_board': [], 'p_graveyard': [],
-        'ai_hand': [], 'ai_land': [], 'ai_board': [], 'ai_graveyard': [],
-        'history': ["Decks chargés : Meule vs Contrôle !"],
-        'chat': [{"user": "Kael", "msg": "Bonne chance pour me meuler, j'ai prévu de tout contrer."}],
-        'stack': None, 'difficulty_lvl': 5, 'is_paused': False, 'phase': 'SETUP'
-    }
-
-g = st.session_state.game
-
-# --- LOGIQUE ---
+# --- FONCTIONS SYSTÈME ---
 def piocher(joueur, nb=1):
     for _ in range(nb):
-        deck = g['p_deck'] if joueur == "Steeven" else g['ai_deck']
-        hand = g['p_hand'] if joueur == "Steeven" else g['ai_hand']
+        deck = st.session_state.game['p_deck'] if joueur == "Steeven" else st.session_state.game['ai_deck']
+        hand = st.session_state.game['p_hand'] if joueur == "Steeven" else st.session_state.game['ai_hand']
         if deck:
             hand.append(deck.pop())
-        else:
-            ajouter_log(f"GAME OVER : {joueur} n'a plus de bibliothèque !")
+
+def meuler(cible, nb_cartes):
+    deck_cible = st.session_state.game['ai_deck'] if cible == "Kael" else st.session_state.game['p_deck']
+    cimetiere_cible = st.session_state.game['ai_graveyard'] if cible == "Kael" else st.session_state.game['p_graveyard']
+    for _ in range(nb_cartes):
+        if deck_cible:
+            cimetiere_cible.append(deck_cible.pop())
+    ajouter_log(f"📉 {cible} perd {nb_cartes} cartes !")
 
 def stats_cimet(liste):
     mon = sum(1 for c in liste if CARDS_DB.get(c, {}).get('type') == "Monstre")
@@ -74,12 +51,28 @@ def stats_cimet(liste):
     art = sum(1 for c in liste if CARDS_DB.get(c, {}).get('type') == "Artefact")
     return f"👹 {mon} | ✨ {sor} | ⛰️ {ter} | 💎 {art}"
 
-def ajouter_log(msg): g['history'].insert(0, msg)
+def ajouter_log(msg):
+    st.session_state.game['history'].insert(0, msg)
 
-# --- INTERFACE ---
+# --- INITIALISATION DU JEU ---
+if 'game' not in st.session_state:
+    st.session_state.game = {
+        'p_hp': 20, 'ai_hp': 20,
+        'p_deck': (["Hedron Crab"]*4 + ["Glimpse the Unthinkable"]*4 + ["Archive Trap"]*4 + ["Island"]*20 + ["Swamp"]*10),
+        'ai_deck': (["Counterspell"]*4 + ["Island"]*24 + ["Opt"]*10 + ["Various Draw"]*10),
+        'p_hand': [], 'p_land': [], 'p_board': [], 'p_graveyard': [],
+        'ai_hand': [], 'ai_land': [], 'ai_board': [], 'ai_graveyard': [],
+        'history': ["Duel chargé !"],
+        'chat': [{"user": "Kael", "msg": "Prêt pour le duel ?"}],
+        'phase': 'SETUP'
+    }
+
+g = st.session_state.game
+
+# --- INTERFACE GRAPHIQUE ---
 if g['phase'] == 'SETUP':
-    st.title("🧙‍♂️ Magic Arena : Mill vs Control")
-    if st.button("🎲 MÉLANGER ET DISTRIBUER", use_container_width=True):
+    st.title("🧙‍♂️ Magic Arena : Steeven vs Kael")
+    if st.button("🎲 LANCER LE DUEL", use_container_width=True):
         random.shuffle(g['p_deck'])
         random.shuffle(g['ai_deck'])
         piocher("Steeven", 7)
@@ -87,7 +80,6 @@ if g['phase'] == 'SETUP':
         g['phase'] = 'PLAY'
         st.rerun()
 else:
-    # (Ici on garde ton interface symétrique V14)
     col_hist, col_main, col_chat = st.columns([1, 2.5, 1])
 
     with col_hist:
@@ -103,78 +95,49 @@ else:
                 st.caption(f"📑 IA: {len(g['ai_deck'])}/60")
                 with st.expander(f"💀 Cimetière IA ({len(g['ai_graveyard'])})"):
                     st.write(stats_cimet(g['ai_graveyard']))
-            with c2: 
-                st.markdown(f"<h3 style='text-align: center; margin:0;'>🖥️ KAEL - ❤️ {g['ai_hp']}</h3>", unsafe_allow_html=True)
+            with c2: st.markdown(f"<h3 style='text-align:center;'>🖥️ KAEL - ❤️ {g['ai_hp']}</h3>", unsafe_allow_html=True)
             
             st.write("")
-            ai_hand_cols = st.columns(max(len(g['ai_hand']), 1))
+            ai_cols = st.columns(max(len(g['ai_hand']), 1))
             for i in range(len(g['ai_hand'])):
-                ai_hand_cols[i].button("🎴", key=f"ai_h_{i}", disabled=True, use_container_width=True)
-            
-            st.divider()
-            st.write(f"⛰️ Terrains: {len(g['ai_land'])} | 👹 Board: {len(g['ai_board'])}")
+                ai_cols[i].button("🎴", key=f"ai_h_{i}", disabled=True, use_container_width=True)
 
-        # ZONE DE COMBAT
+        # ZONE COMBAT
         st.write("")
-        with st.container(height=120, border=True):
-            if g['stack']:
-                st.warning(f"⚡ PILE : {g['stack']}")
-            else:
-                st.markdown("<div style='text-align: center; color: gray; padding-top: 20px;'>Le champ est libre...</div>", unsafe_allow_html=True)
+        with st.container(height=100, border=True):
+            st.markdown("<center>Zone de combat</center>", unsafe_allow_html=True)
 
         # ZONE JOUEUR
         with st.container(border=True):
             st.write(f"👹 Board: {len(g['p_board'])} | ⛰️ Terrains: {len(g['p_land'])}")
             st.divider()
             
-            p_hand_cols = st.columns(max(len(g['p_hand']), 1))
+            p_cols = st.columns(max(len(g['p_hand']), 1))
             for i, card in enumerate(g['p_hand']):
-                # --- LOGIQUE DE JEU STEEVEN (Remplacement lignes 132-141) ---
-            if p_hand_cols[i].button(card, key=f"p_{i}", use_container_width=True):
-                c_data = CARDS_DB.get(card, {})
-                
-                # 1. Gestion des Terrains & Landfall (Crabe)
-                if c_data['type'] == "Terrain":
-                    g['p_land'].append(g['p_hand'].pop(i))
-                    ajouter_log(f"📍 Steeven pose {card}")
-                    # Effet Crabe d'Hédron
-                    crabes = sum(1 for c in g['p_board'] if c == "Hedron Crab")
-                    if crabes > 0:
-                        meuler("Kael", 3 * crabes)
-
-                # 2. Invocation des Monstres
-                elif c_data['type'] == "Monstre":
-                    g['p_board'].append(g['p_hand'].pop(i))
-                    ajouter_log(f"🃏 Steeven invoque {card}")
-
-                # 3. Sorts de Meule directs
-                elif card == "Glimpse the Unthinkable":
-                    g['p_graveyard'].append(g['p_hand'].pop(i))
-                    meuler("Kael", 10)
+                if p_cols[i].button(card, key=f"p_{i}", use_container_width=True):
+                    c_type = CARDS_DB.get(card, {}).get('type')
                     
-                elif card == "Archive Trap":
-                    g['p_graveyard'].append(g['p_hand'].pop(i))
-                    meuler("Kael", 13)
-
-                # 4. Sorts de Pioche
-                elif card == "Visions of Beyond":
-                    g['p_graveyard'].append(g['p_hand'].pop(i))
-                    nb_p = 3 if len(g['ai_graveyard']) >= 20 else 1
-                    piocher("Steeven", nb_p)
-                    ajouter_log(f"🔮 Visions : Steeven pioche {nb_p}")
-
-                # Par défaut pour les autres cartes
-                else:
-                    g['p_graveyard'].append(g['p_hand'].pop(i))
-                    ajouter_log(f"✨ Steeven joue {card}")
-                
-                st.rerun()
+                    if c_type == "Terrain":
+                        g['p_land'].append(g['p_hand'].pop(i))
+                        ajouter_log(f"📍 Steeven pose {card}")
+                        # Effet Crabe
+                        if any(c == "Hedron Crab" for c in g['p_board']):
+                            meuler("Kael", 3)
+                    elif c_type == "Monstre":
+                        g['p_board'].append(g['p_hand'].pop(i))
+                        ajouter_log(f"🃏 Steeven invoque {card}")
+                    elif card == "Glimpse the Unthinkable":
+                        g['p_graveyard'].append(g['p_hand'].pop(i))
+                        meuler("Kael", 10)
+                    elif card == "Archive Trap":
+                        g['p_graveyard'].append(g['p_hand'].pop(i))
+                        meuler("Kael", 13)
+                    st.rerun()
             
             st.write("")
             c_low1, c_low2, c_low3 = st.columns([1, 1.5, 1])
-            with c_low1: 
-                 st.markdown(f"<h3 style='text-align: left; margin:0;'>👤 STEEVEN - ❤️ {g['p_hp']}</h3>", unsafe_allow_html=True)
-            with c_low3: 
+            with c_low1: st.markdown(f"<h3>👤 STEEVEN - ❤️ {g['p_hp']}</h3>", unsafe_allow_html=True)
+            with c_low3:
                 st.caption(f"📑 Ma Bibli: {len(g['p_deck'])}")
                 with st.expander(f"💀 Mon Cimetière ({len(g['p_graveyard'])})"):
                     st.write(stats_cimet(g['p_graveyard']))
@@ -183,14 +146,6 @@ else:
         st.subheader("💬 Chat")
         with st.container(height=300):
             for m in g['chat']: st.markdown(f"**{m['user']}:** {m['msg']}")
-        
-        with st.form("chat", clear_on_submit=True):
-            msg = st.text_input("Répondre...")
-            if st.form_submit_button("Envoyer"):
-                if msg: g['chat'].append({"user": "Moi", "msg": msg}); st.rerun()
-
-        st.divider()
-        if st.button("▶️ TOUR IA", use_container_width=True, type="primary"):
+        if st.button("▶️ TOUR IA", use_container_width=True):
             piocher("Kael")
-            ajouter_log("Kael pioche et analyse...")
             st.rerun()

@@ -4,7 +4,7 @@ import random
 
 st.set_page_config(page_title="Magic Arena Pro", layout="wide")
 
-# --- INITIALISATION ---
+# --- INITIALISATION DU JEU ---
 if 'game' not in st.session_state:
     st.session_state.game = {
         'p_hp': 20, 'ai_hp': 20,
@@ -18,7 +18,7 @@ if 'game' not in st.session_state:
         'ai_board': [],
         'ai_graveyard': [],
         'history': ["Bienvenue dans l'Arène !"],
-        'chat': [{"user": "Kael", "msg": "Alors, tu as peur ?"}],
+        'chat': [{"user": "Kael", "msg": "Alors, Steeven, tu as peur ?"}],
         'stack': None,
         'difficulty_lvl': 5,
         'is_paused': False,
@@ -29,7 +29,7 @@ if 'game' not in st.session_state:
 g = st.session_state.game
 temps_reaction = 45 - (g['difficulty_lvl'] - 1) * 4.44
 
-# --- FONCTIONS ---
+# --- LOGIQUE INTERNE ---
 def ajouter_log(message):
     g['history'].insert(0, message)
 
@@ -38,9 +38,9 @@ def initialiser():
     g['p_hand'] = [g['p_deck'].pop() for _ in range(7)]
     g['turn_owner'] = random.choice(["Steeven", "Kael"])
     g['phase'] = 'MULLIGAN'
-    ajouter_log("Mélange des decks et tirage.")
+    ajouter_log(f"Mélange terminé. {g['turn_owner']} commence.")
 
-# --- SIDEBAR (CONFIGURATION) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.header("⚙️ Configuration")
     g['difficulty_lvl'] = st.slider("Difficulté", 1, 10, g['difficulty_lvl'])
@@ -48,50 +48,47 @@ with st.sidebar:
         del st.session_state['game']
         st.rerun()
 
-# --- ÉCRAN DE DÉPART ---
+# --- PHASES DE DÉPART ---
 if g['phase'] == 'SETUP':
     st.title("🧙‍♂️ Magic Arena")
     if st.button("🎲 MÉLANGER ET DISTRIBUER", use_container_width=True):
         initialiser()
         st.rerun()
 
-# --- PHASE MULLIGAN ---
 elif g['phase'] == 'MULLIGAN':
     st.subheader(f"👋 Premier joueur : {g['turn_owner']}")
-    st.write("Ta main de départ :")
     cols = st.columns(7)
     for i, c in enumerate(g['p_hand']): cols[i].button(c, disabled=True, key=f"m_{i}")
-    col1, col2 = st.columns(2)
-    if col1.button("✅ Garder", use_container_width=True):
+    c1, c2 = st.columns(2)
+    if c1.button("✅ Garder la main", use_container_width=True):
         g['phase'] = 'PLAY'
         st.rerun()
-    if col2.button("❌ Mulligan", use_container_width=True):
+    if c2.button("❌ Mulligan", use_container_width=True):
         g['p_deck'].extend(g['p_hand'])
         random.shuffle(g['p_deck'])
         g['p_hand'] = [g['p_deck'].pop() for _ in range(7)]
         st.rerun()
 
-# --- LE PLATEAU DE JEU ---
+# --- LE PLATEAU (DESIGN image_4.png) ---
 else:
-    # Top bar pour les Bibliothèques et Cimetières (selon ton dessin)
-    t1, t2, t3, t4 = st.columns(4)
-    t1.metric("📚 Ma Bibli", f"{len(g['p_deck'])}/60")
-    t2.metric("💀 Mon Cimetière", len(g['p_graveyard']))
-    t3.metric("📚 Bibli IA", "??/60")
-    t4.metric("💀 Cimetière IA", len(g['ai_graveyard']))
+    # 1. RANGÉE DES RESSOURCES (METRICS)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("📚 Ma Bibli", f"{len(g['p_deck'])}/60")
+    m2.metric("💀 Mon Cimetière", len(g['p_graveyard']))
+    m3.metric("📚 Bibli IA", "??/60")
+    m4.metric("💀 Cimetière IA", len(g['ai_graveyard']))
 
     st.divider()
 
+    # 2. DISPOSITION EN 3 COLONNES
     col_left, col_mid, col_right = st.columns([1, 2.5, 1])
 
-    # GAUCHE : HISTORIQUE
-    with col_left:
+    with col_left: # HISTORIQUE
         st.subheader("📜 Historique")
-        with st.container(height=400):
+        with st.container(height=450):
             for log in g['history']: st.caption(log)
 
-    # CENTRE : LE COMBAT
-    with col_mid:
+    with col_mid: # PLATEAU CENTRAL
         # ZONE IA
         with st.container(border=True):
             st.write(f"🖥️ **KAEL** - ❤️ {g['ai_hp']} PV")
@@ -100,7 +97,7 @@ else:
 
         # ZONE DE COMBAT (STACK)
         st.write("")
-        with st.container(height=150):
+        with st.container(height=180, border=True):
             if g['stack']:
                 st.warning(f"⚡ SORT EN COURS : {g['stack']}")
                 if not g['is_paused']:
@@ -131,21 +128,21 @@ else:
                     elif card == "Counterspell" and g['stack']:
                         g['p_graveyard'].append(g['p_hand'].pop(i))
                         g['stack'] = None
-                        ajouter_log("Sort contré !")
+                        ajouter_log("Sort contré avec succès !")
                     st.rerun()
 
-    # DROITE : CHAT & ACTIONS
-    with col_right:
+    with col_right: # CHAT & BOUTONS
         st.subheader("💬 Chat IA")
-        with st.container(height=250):
-            for m in g['chat']:
-                st.markdown(f"**{m['user']}:** {m['msg']}")
+        with st.container(height=200):
+            for m in g['chat']: st.markdown(f"**{m['user']}:** {m['msg']}")
         
-        user_msg = st.text_input("Répondre à Kael...", key="chat_input")
-        if st.button("Envoyer"):
-            if user_msg:
-                g['chat'].append({"user": "Moi", "msg": user_msg})
-                st.rerun()
+        # Le fameux cercle orange : Chat interactif
+        with st.form("chat_form", clear_on_submit=True):
+            user_msg = st.text_input("Répondre...")
+            if st.form_submit_button("Envoyer"):
+                if user_msg:
+                    g['chat'].append({"user": "Moi", "msg": user_msg})
+                    st.rerun()
 
         st.divider()
         if st.button("▶️ TOUR IA", use_container_width=True, type="primary"):

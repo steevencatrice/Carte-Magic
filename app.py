@@ -129,16 +129,46 @@ else:
             
             p_hand_cols = st.columns(max(len(g['p_hand']), 1))
             for i, card in enumerate(g['p_hand']):
-                if p_hand_cols[i].button(card, key=f"p_{i}", use_container_width=True):
-                    # Logique simplifiée pour ce matin
-                    c_data = CARDS_DB.get(card, {})
-                    if c_data['type'] == "Terrain":
-                        g['p_land'].append(g['p_hand'].pop(i))
-                        ajouter_log(f"Steeven pose {card}")
-                    else:
-                        g['stack'] = card
-                        ajouter_log(f"Steeven lance {card} !")
-                    st.rerun()
+                # --- LOGIQUE DE JEU STEEVEN (Remplacement lignes 132-141) ---
+            if p_hand_cols[i].button(card, key=f"p_{i}", use_container_width=True):
+                c_data = CARDS_DB.get(card, {})
+                
+                # 1. Gestion des Terrains & Landfall (Crabe)
+                if c_data['type'] == "Terrain":
+                    g['p_land'].append(g['p_hand'].pop(i))
+                    ajouter_log(f"📍 Steeven pose {card}")
+                    # Effet Crabe d'Hédron
+                    crabes = sum(1 for c in g['p_board'] if c == "Hedron Crab")
+                    if crabes > 0:
+                        meuler("Kael", 3 * crabes)
+
+                # 2. Invocation des Monstres
+                elif c_data['type'] == "Monstre":
+                    g['p_board'].append(g['p_hand'].pop(i))
+                    ajouter_log(f"🃏 Steeven invoque {card}")
+
+                # 3. Sorts de Meule directs
+                elif card == "Glimpse the Unthinkable":
+                    g['p_graveyard'].append(g['p_hand'].pop(i))
+                    meuler("Kael", 10)
+                    
+                elif card == "Archive Trap":
+                    g['p_graveyard'].append(g['p_hand'].pop(i))
+                    meuler("Kael", 13)
+
+                # 4. Sorts de Pioche
+                elif card == "Visions of Beyond":
+                    g['p_graveyard'].append(g['p_hand'].pop(i))
+                    nb_p = 3 if len(g['ai_graveyard']) >= 20 else 1
+                    piocher("Steeven", nb_p)
+                    ajouter_log(f"🔮 Visions : Steeven pioche {nb_p}")
+
+                # Par défaut pour les autres cartes
+                else:
+                    g['p_graveyard'].append(g['p_hand'].pop(i))
+                    ajouter_log(f"✨ Steeven joue {card}")
+                
+                st.rerun()
             
             st.write("")
             c_low1, c_low2, c_low3 = st.columns([1, 1.5, 1])

@@ -19,12 +19,13 @@ if 'game' not in st.session_state:
 g = st.session_state.game
 temps_reaction = 45 - (g['difficulty_lvl'] - 1) * 4.44
 
-# --- FONCTION DE COMPTAGE ---
+# --- FONCTION DE COMPTAGE AVEC ICONES FIXES ---
 def stats_cimet(liste):
     ter = sum(1 for c in liste if c in ["Island", "Mountain"])
     sor = sum(1 for c in liste if c in ["Counterspell", "Opt", "Lava Spike"])
     mon = sum(1 for c in liste if c in ["Hedron Crab", "Goblin Guide"])
     art = sum(1 for c in liste if c in ["Sol Ring"])
+    # Ordre strict : Monstres, Sorts, Terrains, Artefacts
     return f"👹 {mon} | ✨ {sor} | ⛰️ {ter} | 💎 {art}"
 
 # --- PLATEAU ---
@@ -40,32 +41,32 @@ else:
 
     with col_hist:
         st.subheader("📜 Historique")
-        with st.container(height=550):
+        with st.container(height=600):
             for log in g['history']: st.caption(log)
 
     with col_main:
-        # --- ZONE IA (SYMÉTRIE HAUT) ---
+        # --- ZONE IA (HAUT) ---
         with st.container(border=True):
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c1: # Bibliothèque et Cimetière IA
-                st.caption(f"📚 IA: ??/60")
-                with st.expander(f"💀 Cimetière IA ({len(g['ai_graveyard'])})"):
-                    st.write(stats_cimet(g['ai_graveyard']))
-            with c2: # Centre : Nom et PV
-                st.markdown(f"<center>🖥️ <b>KAEL</b> - ❤️ {g['ai_hp']} PV</center>", unsafe_allow_html=True)
+            c1, c2, c3 = st.columns([1, 1.5, 1])
+            with c1: 
+                st.caption(f"📑 IA: ??/60")
+                with st.expander(f"💀 Cimetière IA ({len(g['ai_graveyard'])})", expanded=True):
+                    st.write(stats_cimet(g['ai_graveyard'])) # Icones 👹 ✨ ⛰️ 💎
+            with c2: 
+                st.markdown(f"<h3 style='text-align: center; margin:0;'>🖥️ KAEL - ❤️ {g['ai_hp']}</h3>", unsafe_allow_html=True)
             
-            # Main de l'IA centrée (Symétrie avec tes boutons)
             st.write("")
             ai_hand_cols = st.columns(max(g['ai_hand_count'], 1))
             for i in range(g['ai_hand_count']):
                 ai_hand_cols[i].button("🎴", key=f"ai_h_{i}", disabled=True, use_container_width=True)
             
             st.divider()
+            # Ici aussi on harmonise les icônes de la zone de jeu
             st.write(f"⛰️ Terrains: {len(g['ai_land'])} | 👹 Board: {len(g['ai_board'])}")
 
         # --- ZONE DE COMBAT ---
         st.write("")
-        with st.container(height=150, border=True):
+        with st.container(height=120, border=True):
             if g['stack']:
                 st.warning(f"⚡ PILE : {g['stack']}")
                 barre = st.progress(1.0)
@@ -80,14 +81,14 @@ else:
                         g['stack'] = None
                         st.rerun()
             else:
-                st.markdown("<center>Le champ est libre...</center>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align: center; color: gray; padding-top: 20px;'>Le champ est libre...</div>", unsafe_allow_html=True)
 
-        # --- ZONE JOUEUR (SYMÉTRIE BAS) ---
+        # --- ZONE JOUEUR (BAS) ---
         with st.container(border=True):
-            st.write(f"⚔️ Board: {len(g['p_board'])} | 🛡️ Terrains: {len(g['p_land'])}")
+            # Harmonisation des icônes de board pour Steeven
+            st.write(f"👹 Board: {len(g['p_board'])} | ⛰️ Terrains: {len(g['p_land'])}")
             st.divider()
             
-            # Main du joueur centrée
             p_hand_cols = st.columns(max(len(g['p_hand']), 1))
             for i, card in enumerate(g['p_hand']):
                 if p_hand_cols[i].button(card, key=f"p_{i}", use_container_width=True):
@@ -99,17 +100,17 @@ else:
                     st.rerun()
             
             st.write("")
-            c_low1, c_low2, c_low3 = st.columns([1, 2, 1])
-            with c_low2: # Centre : Nom et PV
-                st.markdown(f"<center>👤 <b>STEEVEN</b> - ❤️ {g['p_hp']} PV</center>", unsafe_allow_html=True)
-            with c_low3: # Bibliothèque et Cimetière Joueur
-                st.caption(f"📚 Ma Bibli: {len(g['p_deck'])}")
-                with st.expander(f"💀 Mon Cimetière ({len(g['p_graveyard'])})"):
-                    st.write(stats_cimet(g['p_graveyard']))
+            c_low1, c_low2, c_low3 = st.columns([1, 1.5, 1])
+            with c_low1: 
+                 st.markdown(f"<h3 style='text-align: left; margin:0;'>👤 STEEVEN - ❤️ {g['p_hp']}</h3>", unsafe_allow_html=True)
+            with c_low3: 
+                st.caption(f"📑 Ma Bibli: {len(g['p_deck'])}")
+                with st.expander(f"💀 Mon Cimetière ({len(g['p_graveyard'])})", expanded=True):
+                    st.write(stats_cimet(g['p_graveyard'])) # Icones 👹 ✨ ⛰️ 💎 exactement comme l'IA
 
     with col_chat:
         st.subheader("💬 Chat")
-        with st.container(height=250):
+        with st.container(height=300):
             for m in g['chat']: st.markdown(f"**{m['user']}:** {m['msg']}")
         
         with st.form("chat", clear_on_submit=True):

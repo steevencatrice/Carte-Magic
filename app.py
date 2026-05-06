@@ -1,7 +1,10 @@
 import streamlit as st
-def get_card(name):
-    # Cette fonction transforme le nom de la carte en lien URL pour l'image
-    name_url = name.replace(" ", "+")
+def get_card_url(name):
+    # Sécurité : si le nom est "0", vide ou pas du texte, on ne cherche pas d'image
+    if not name or str(name) == "0":
+        return None
+    name_url = str(name).replace(" ", "+")
+    # Utilisation du paramètre format=image pour récupérer directement le fichier .jpg
     return f"https://api.scryfall.com/cards/named?fuzzy={name_url}&format=image"
 
 
@@ -289,23 +292,24 @@ with col_p_cards:
         </div>
     """, unsafe_allow_html=True)
     
-    # On force la récupération de la main et on filtre les "0" ou les None
-    p_hand = [c for c in st.session_state.game.get('p_hand', []) if c and str(c) != "0"]
+    # On filtre pour ne garder que les vrais noms de cartes (exclut les "0")
+    p_hand = [c for c in st.session_state.game.get('p_hand', []) if str(c) != "0"]
     
     if p_hand:
-        p_cols = st.columns(len(p_hand[:7])) # Colonnes dynamiques selon le nombre de cartes
-        for i, card_name in enumerate(p_hand[:7]):
-            with p_cols[i]:
-                st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
-                img_url = get_card(card_name)
-                # On vérifie si l'URL semble valide avant d'afficher
-                if img_url and img_url.startswith("http"):
+        # Création dynamique des colonnes selon le nombre de cartes réelles
+        cols_hand = st.columns(len(p_hand))
+        for i, card_name in enumerate(p_hand):
+            with cols_hand[i]:
+                # On passe l'index original ou le nom pour la fonction play_card
+                st.button("Jouer", key=f"play_{i}_{card_name}", on_click=play_card, args=(i,))
+                
+                img_url = get_card_url(card_name)
+                if img_url:
                     st.image(img_url, use_container_width=True)
                 else:
-                    # Image de remplacement si l'API échoue
-                    st.code(f"[{card_name}]") 
+                    st.warning("Nom invalide")
     else:
-        st.info("Votre main ne contient aucune carte valide.")
+        st.info("Votre main est vide ou contient des données erronées.")
 with col_p_grave:
     pg = st.session_state.game.get('p_grave', {})
     st.markdown(f"""

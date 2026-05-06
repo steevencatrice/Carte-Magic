@@ -1,5 +1,3 @@
-V7 23h43
-
 import streamlit as st
 def get_card(name):
     # Cette fonction transforme le nom de la carte en lien URL pour l'image

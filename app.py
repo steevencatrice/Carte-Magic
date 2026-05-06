@@ -271,16 +271,24 @@ with center_col:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-# --- SECTION FINALE CORRIGÉE ---
-col_p_cards, col_p_grave = st.columns([8, 2])
+# --- SECTION MAIN CORRIGÉE ---
+p_hand = st.session_state.game.get('p_hand', [])
 
-with col_p_cards:
-    st.markdown(f"""
-        <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <b>👤 STEEVEN</b>
-            <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
-        </div>
-    """, unsafe_allow_html=True)
+if p_hand:
+    p_cols = st.columns(7)
+    # On utilise enumerate pour garder l'index original pour le bouton "Jouer"
+    for i, card_name in enumerate(p_hand[:7]):
+        with p_cols[i]:
+            # CONDITION CRUCIALE : On n'affiche QUE si ce n'est pas un "0"
+            if card_name and str(card_name) != "0":
+                st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
+                img_url = get_card(card_name)
+                st.image(img_url, use_container_width=True)
+            else:
+                # Si c'est un "0", on laisse un espace vide propre
+                st.write(" ") 
+else:
+    st.write("*(Main vide)*")
     
     # On récupère la main
     p_hand = st.session_state.game.get('p_hand', [])

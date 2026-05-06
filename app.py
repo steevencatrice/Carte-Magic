@@ -229,24 +229,33 @@ with center_col:
 
 
 # ==========================================
-    # ZONE JOUEUR (STEEVEN)
-    # ==========================================
+# ZONE JOUEUR (STEEVEN)
+# ==========================================
 
+# 1. Barre d'infos (Nom + HP à droite comme Kael)
+st.markdown(f"""
+    <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <b>👤 STEEVEN</b>
+        <span style="color:#e91e63; font-weight:bold;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
+    </div>
+""", unsafe_allow_html=True)
 
-    # --- 1. LE CHAMP DE BATAILLE (CREATURES - TAILLE RÉDUITE) ---
-    st.markdown("---")
-    st.markdown("### ⚔️ CHAMP DE BATAILLE")
-   
-    if st.session_state.game['p_board']:
-        # On passe à 10 colonnes pour aligner plus de créatures
-        cols_b = st.columns(10)
-        for idx, crea in enumerate(st.session_state.game['p_board']):
-            with cols_b[idx % 10]:
-                # Taille fixée à 80px comme les terrains
-                st.image(get_card(crea["name"]), width=80)
-                st.caption(f"{crea['name'][:8]}...") # Nom abrégé pour pas déborder
-    else:
-        st.write("*(Champ de bataille vide)*")
+# 2. Affichage de la Main (Correction de la représentation des cartes)
+if st.session_state.game['p_hand']:
+    # On crée 7 colonnes pour les 7 cartes max en main
+    p_cols = st.columns(7)
+    for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
+        with p_cols[i]:
+            # Bouton pour jouer la carte
+            if st.button("Jouer", key=f"btn_p_play_{i}"):
+                play_card(i)
+            
+            # ICI : Affichage de l'image de la carte (La ligne manquante !)
+            st.image(get_card(card_name), use_container_width=True)
+else:
+    st.info("Votre main est vide.")
+
+# 3. Suppression du doublon (On s'arrête ici, ne remets pas de deuxième barre STEEVEN)
 
 
     # --- 2. TES TERRAINS (ALIGNÉS SUR LA MÊME TAILLE) ---

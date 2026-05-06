@@ -265,10 +265,10 @@ with center_col:
 
 
     st.markdown("---")
-    # --- 3. TA SECTION (STEEVEN) ---
+# --- 3. TA SECTION (STEEVEN) ---
     st.markdown("---")
-   
-    # Barre d'actions (Annotation 1)
+    
+    # Barre d'actions
     col_atk, col_bloc, col_grave, col_biblio, col_fin = st.columns(5)
     with col_atk: st.button("⚔️ ATK", use_container_width=True)
     with col_bloc: st.button("🛡️ BLOC", use_container_width=True)
@@ -276,31 +276,35 @@ with center_col:
     with col_biblio: st.button("🔍 BIBLIO", use_container_width=True)
     with col_fin: st.button("🏁 FIN", use_container_width=True)
 
-
     st.markdown("<br>", unsafe_allow_html=True)
 
-
-    # Ligne d'info avec PV et Coeur (Annotation 2)
+    # Ligne d'info avec PV et Coeur
     col_p_cards, col_p_grave = st.columns([8, 2])
 
-
     with col_p_cards:
-        # On remet le petit coeur et les PV à côté de ton nom
         st.markdown(f"""
             <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                 <b>👤 STEEVEN</b>
                 <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
             </div>
         """, unsafe_allow_html=True)
-       
-        # Affichage de la main
+        
+        # Affichage de la main (Correction de l'affichage des images)
         if st.session_state.game['p_hand']:
             p_cols = st.columns(7)
             for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
                 with p_cols[i]:
                     if st.button("Jouer", key=f"btn_p_play_{i}"):
                         play_card(i)
-                    st.image(get_card(card_name), width=150)
+                    
+                    # On récupère l'URL/chemin de l'image
+                    img_url = get_card(card_name)
+                    if img_url:
+                        st.image(img_url, width=130) # Taille légèrement réduite pour assurer l'affichage
+                    else:
+                        st.warning("Image manquante")
+        else:
+            st.write("*(Main vide)*")
 
 
  # --- TON CIMETIÈRE (BLEU ET FRANÇAIS) ---

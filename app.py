@@ -281,8 +281,7 @@ with center_col:
 # 1. Création des deux colonnes : Main (8) et Cimetière (2)
     col_p_cards, col_p_grave = st.columns([8, 2])
 
-    with col_p_cards:
-        # Barre de profil avec PV
+   with col_p_cards:
         st.markdown(f"""
             <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                 <b>👤 STEEVEN</b>
@@ -290,17 +289,18 @@ with center_col:
             </div>
         """, unsafe_allow_html=True)
         
-        # Affichage de ta main avec les images
-        if st.session_state.game['p_hand']:
-            p_cols = st.columns(7)
-            for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
+        # Test d'affichage forcé
+        p_hand = st.session_state.game.get('p_hand', [])
+        if p_hand:
+            p_cols = st.columns(len(p_hand[:7]))
+            for i, card_name in enumerate(p_hand[:7]):
                 with p_cols[i]:
-                    if st.button("Jouer", key=f"btn_p_play_{i}"):
-                        play_card(i)
-                    # Commande pour afficher l'image de la carte
-                    st.image(get_card(card_name), width=130)
+                    st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
+                    # On affiche le nom de la carte en texte pour debugger
+                    st.write(f"DEBUG: {card_name}") 
+                    st.image(get_card(card_name), width=120)
         else:
-            st.write("*(Main vide)*")
+            st.warning("Ta main semble vide dans le code.")
 
     # 2. Ton cimetière (Aligné à droite de ta main)
     with col_p_grave:

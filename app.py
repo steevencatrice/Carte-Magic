@@ -79,14 +79,18 @@ def kael_turn():
     st.rerun()
 
 
-# --- LOGIQUE DE JEU ---
+# --- LOGIQUE DE JEU (CORRIGÉE) ---
+
 def get_card(card_name):
-    if not card_name or card_name == "0":
-        return None
+    """Transforme le nom de la carte en URL d'image via l'API Scryfall."""
+    if not card_name or str(card_name) == "0":
+        return ""
+    # On remplace les espaces par des + pour l'URL
     clean_name = str(card_name).replace(" ", "+")
     return f"https://api.scryfall.com/cards/named?exact={clean_name}&format=image"
 
 def play_card(card_index):
+    """Gère la pose d'une carte depuis la main vers le board."""
     g = st.session_state.game
     liste_terrains = ["Island", "Swamp", "Mountain", "Watery Grave", "Polluted Delta"]
     
@@ -96,16 +100,19 @@ def play_card(card_index):
         if card_name in liste_terrains:
             g['p_land'].append({"name": card_name, "tapped": False})
             g['history'].insert(0, f"🌍 Steeven joue {card_name}")
-            # Effet Crabe
+            
+            # Effet Crabe (si présent sur le board)
             if any(c['name'] == "Hedron Crab" for c in g['p_board']):
                 for _ in range(3):
                     if g['ai_deck']:
+                        # On s'assure que la clé 'Sorts' existe
                         g['ai_grave']['Sorts'] = g['ai_grave'].get('Sorts', 0) + 1
                         g['ai_deck'].pop(0)
         else:
             g['p_board'].append({"name": card_name, "tapped": False})
             g['history'].insert(0, f"⚔️ Steeven joue {card_name}")
-        st.rerun()
+        
+        # NOTE : Pas de st.rerun() ici ! C'est automatique via on_click.
 
 
 # --- 3. CHAMP DE BATAILLE ---

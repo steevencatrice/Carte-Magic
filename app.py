@@ -199,13 +199,17 @@ with center_col:
 
     with col_k_grave:
         # Cimetière Kael
-        st.markdown(f"""<div class="grave-box" style="border-color:#e57373;">
-            <div class="grave-item"><span>🌍 Land</span><b>{g['ai_grave'].get('Lands', 0)}</b></div>
-            <div class="grave-item"><span>💎 Art.</span><b>0</b></div>
-            <div class="grave-item"><span>👾 Créa.</span><b>{g['ai_grave'].get('Créas', 0)}</b></div>
-            <div class="grave-item"><span>📜 Sort</span><b>{g['ai_grave'].get('Sorts', 0)}</b></div>
-            <div class="grave-item"><span>✨ Ench.</span><b>0</b></div>
-        </div>""", unsafe_allow_html=True)
+         st.markdown(f"""
+            <div style="border:2px solid #ef5350; border-radius:10px; padding:10px; background:white;">
+                <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE</b></p>
+                <hr style="margin:5px 0;">
+                <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{g.get('Lands', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{g.get('Créas', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{g.get('Sorts', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">💎 Artéfact: <b>{g.get('Artifacts', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g.get('Enchants', 0)}</b></p>
+            </div>
+        """, unsafe_allow_html=True)
 
 
     # --- ESPACE ICI ---
@@ -261,37 +265,55 @@ with center_col:
 
 
     st.markdown("---")
-    # --- 3. TA SECTION (MAIN ET CIMETIÈRE 5 LIGNES) ---
+    # --- 3. TA SECTION (STEEVEN) ---
     st.markdown("---")
+   
+    # Barre d'actions (Annotation 1)
+    col_atk, col_bloc, col_grave, col_biblio, col_fin = st.columns(5)
+    with col_atk: st.button("⚔️ ATK", use_container_width=True)
+    with col_bloc: st.button("🛡️ BLOC", use_container_width=True)
+    with col_grave: st.button("⚰️ GRAVE", use_container_width=True)
+    with col_biblio: st.button("🔍 BIBLIO", use_container_width=True)
+    with col_fin: st.button("🏁 FIN", use_container_width=True)
+
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+
+    # Ligne d'info avec PV et Coeur (Annotation 2)
     col_p_cards, col_p_grave = st.columns([8, 2])
 
 
     with col_p_cards:
-        st.markdown(f'<div style="background:white; padding:5px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px;"><b>👤 STEEVEN</b></div>', unsafe_allow_html=True)
+        # On remet le petit coeur et les PV à côté de ton nom
+        st.markdown(f"""
+            <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                <b>👤 STEEVEN</b>
+                <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
+            </div>
+        """, unsafe_allow_html=True)
        
-        # On vérifie si tu as des cartes en main avant d'afficher
+        # Affichage de la main
         if st.session_state.game['p_hand']:
             p_cols = st.columns(7)
             for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
                 with p_cols[i]:
-                    if st.button("Jouer", key=f"btn_play_{i}"):
+                    if st.button("Jouer", key=f"btn_p_play_{i}"):
                         play_card(i)
                     st.image(get_card(card_name), width=150)
-        else:
-            st.write("*(Main vide)*")
 
 
+ # --- TON CIMETIÈRE (BLEU ET FRANÇAIS) ---
     with col_p_grave:
         g = st.session_state.game['p_grave']
-        # Bloc cimetière 5 lignes calqué sur l'adversaire
         st.markdown(f"""
             <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
                 <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE</b></p>
-                <hr style="margin:5px 0;">
-                <p style="margin:0; font-size:0.8em;">🌍 Lands: <b>{g.get('Lands', 0)}</b></p>
-                <p style="margin:0; font-size:0.8em;">👾 Créas: <b>{g.get('Créas', 0)}</b></p>
+                <hr style="margin:5px 0; border-top:1px solid #42a5f5;">
+                <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{g.get('Lands', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{g.get('Créas', 0)}</b></p>
                 <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{g.get('Sorts', 0)}</b></p>
-                <p style="margin:0; font-size:0.8em;">💎 Arts: <b>{g.get('Artifacts', 0)}</b></p>
-                <p style="margin:0; font-size:0.8em;">✨ Ench: <b>{g.get('Enchants', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">💎 Artéfact: <b>{g.get('Artifacts', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g.get('Enchants', 0)}</b></p>
             </div>
         """, unsafe_allow_html=True)

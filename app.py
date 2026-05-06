@@ -6,6 +6,7 @@ import random
 # ==========================================
 st.set_page_config(page_title="Magic: Steeven vs Kael", layout="wide")
 
+# CSS pour un affichage propre
 st.markdown("""
     <style>
     .sidebar-box { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
@@ -15,7 +16,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. LOGIQUE & FONCTIONS
+# 2. FONCTIONS DE LOGIQUE
 # ==========================================
 
 def get_card_url(name):
@@ -26,156 +27,155 @@ def get_card_url(name):
     return f"https://api.scryfall.com/cards/named?fuzzy={name_url}&format=image"
 
 def kael_turn():
-    """Logique simplifiée pour le tour de l'IA."""
+    """Intelligence Artificielle de Kael."""
     g = st.session_state.game
+    # Phase de pioche
     if g['ai_deck']:
         g['ai_hand'].append(g['ai_deck'].pop(0))
+    # Jouer un terrain
     for i, card in enumerate(g['ai_hand']):
         if card == "Mountain":
             land = g['ai_hand'].pop(i)
             g['ai_land'].append({"name": land, "tapped": False})
             g['history'].insert(0, "🔥 Kael joue une Montagne")
             break
+    g['history'].insert(0, "🤖 Kael a terminé son tour")
 
 def play_card(card_index):
-    """Déplace une carte de la main vers le champ de bataille."""
+    """Pose une carte sur le plateau."""
     g = st.session_state.game
-    # Filtrage de la main pour correspondre à l'affichage
-    valid_hand_indices = [i for i, c in enumerate(g['p_hand']) if str(c) != "0"]
+    # On identifie la carte réelle dans la main filtrée
+    valid_indices = [i for i, c in enumerate(g['p_hand']) if str(c) != "0"]
     
-    if card_index < len(valid_hand_indices):
-        real_idx = valid_hand_indices[card_index]
+    if card_index < len(valid_indices):
+        real_idx = valid_indices[card_index]
         card_name = g['p_hand'].pop(real_idx)
         
-        liste_terrains = ["Island", "Swamp", "Mountain", "Watery Grave", "Polluted Delta"]
+        terrains = ["Island", "Swamp", "Mountain", "Watery Grave", "Polluted Delta"]
         
-        if card_name in liste_terrains:
+        if card_name in terrains:
             g['p_land'].append({"name": card_name, "tapped": False})
             g['history'].insert(0, f"🌍 Steeven joue {card_name}")
-            # Effet Crabe
+            # Effet automatique du Crabe d'Hèdre
             if any(c['name'] == "Hedron Crab" for c in g['p_board']):
-                if g['ai_deck']:
-                    for _ in range(min(3, len(g['ai_deck']))):
-                        g['ai_grave']['Sorts'] += 1
-                        g['ai_deck'].pop(0)
-                    g['history'].insert(0, "🦀 Le Crabe meule 3 cartes !")
+                for _ in range(min(3, len(g['ai_deck']))):
+                    g['ai_grave']['Sorts'] += 1
+                    g['ai_deck'].pop(0)
+                g['history'].insert(0, "🦀 Effet Crabe : Kael meule 3 !")
         else:
             g['p_board'].append({"name": card_name, "tapped": False})
             g['history'].insert(0, f"⚔️ Steeven joue {card_name}")
 
 # ==========================================
-# 3. INITIALISATION DU JEU
+# 3. INITIALISATION
 # ==========================================
-DECKS = {
-    "Meule": ["Hedron Crab"]*4 + ["Glimpse the Unthinkable"]*4 + ["Archive Trap"]*4 + ["Tasha's Hideous Laughter"]*4 + ["Jace's Phantasm"]*4 + ["Dark Ritual"]*4 + ["Visions of Beyond"]*3 + ["Polluted Delta"]*4 + ["Watery Grave"]*4 + ["Island"]*15 + ["Swamp"]*10,
-    "Burn": ["Ball Lightning"]*4 + ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Skewer the Critics"]*4 + ["Rift Bolt"]*4 + ["Fireblast"]*4 + ["Shock"]*4 + ["Incinerate"]*4 + ["Chain Lightning"]*4 + ["Mountain"]*24
-}
-
 if 'game' not in st.session_state:
-    p_deck = DECKS["Meule"][:]
-    ai_deck = DECKS["Burn"][:]
+    decks = {
+        "Meule": ["Hedron Crab"]*4 + ["Glimpse the Unthinkable"]*4 + ["Archive Trap"]*4 + ["Island"]*15 + ["Swamp"]*10,
+        "Burn": ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Mountain"]*20
+    }
+    p_deck = decks["Meule"][:]
+    ai_deck = decks["Burn"][:]
     random.shuffle(p_deck)
     random.shuffle(ai_deck)
+    
     st.session_state.game = {
         'p_hp': 20, 'ai_hp': 20, 'p_mana': 0,
         'p_deck': p_deck[7:], 'p_hand': p_deck[:7],
         'p_land': [], 'p_board': [],
-        'p_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0, 'Artifacts': 0, 'Enchants': 0},
+        'p_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0},
         'ai_deck': ai_deck[7:], 'ai_hand': ai_deck[:7],
         'ai_land': [], 'ai_board': [],
-        'ai_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0, 'Artifacts': 0, 'Enchants': 0},
-        'history': ["Début de la partie"],
-        'chat': [{"u": "Kael", "m": "Bonne chance Steeven !"}],
-        'phase': "PRINCIPALE 1"
+        'ai_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0},
+        'history': ["La partie commence !"],
+        'chat': [{"u": "Kael", "m": "À toi de jouer !"}],
     }
 
 g = st.session_state.game
 
 # ==========================================
-# 4. INTERFACE UTILISATEUR (SIDEBAR)
+# 4. BARRE LATÉRALE (SIDEBAR)
 # ==========================================
 with st.sidebar:
-    st.header("🎮 MENU MAGIC")
-    if st.button("♻️ RESET PARTIE", use_container_width=True):
+    st.header("🎮 MTG ARENA LITE")
+    if st.button("♻️ RESET PARTIE", key="reset_btn"):
         st.session_state.clear()
         st.rerun()
     
-    st.caption("💬 CHAT")
-    chat_content = "".join([f"<b>{m['u']}</b>: {m['m']}<br>" for m in g['chat'][-10:]])
-    st.markdown(f'<div class="sidebar-box" style="height:200px; overflow-y:auto;">{chat_content}</div>', unsafe_allow_html=True)
+    st.caption("💬 CHAT AVEC KAEL")
+    chat_html = "".join([f"<b>{m['u']}</b>: {m['m']}<br>" for m in g['chat'][-5:]])
+    st.markdown(f'<div class="sidebar-box">{chat_html}</div>', unsafe_allow_html=True)
     
-    m_in = st.text_input("Message...", key="side_chat")
-    if st.button("Envoyer", use_container_width=True):
-        if m_in: 
-            g['chat'].append({"u": "Steeven", "m": m_in})
+    # Utilisation d'une clé unique pour l'input
+    user_msg = st.text_input("Message...", key="chat_input_unique")
+    if st.button("Envoyer", key="send_chat_btn"):
+        if user_msg:
+            g['chat'].append({"u": "Steeven", "m": user_msg})
             st.rerun()
 
-    st.caption("📜 ACTIONS")
-    h_txt = "".join([f"• {a}<br>" for a in g['history'][-10:]])
-    st.markdown(f'<div class="sidebar-box" style="height:150px; overflow-y:auto;">{h_txt}</div>', unsafe_allow_html=True)
-
 # ==========================================
-# 5. PLATEAU DE JEU PRINCIPAL
+# 5. PLATEAU CENTRAL
 # ==========================================
-_, center_col, _ = st.columns([0.5, 9, 0.5])
+_, col_main, _ = st.columns([0.5, 9, 0.5])
 
-with center_col:
-    # --- SECTION KAEL ---
-    col_k_cards, col_k_grave = st.columns([8, 2])
-    with col_k_cards:
-        k_cols = st.columns(7)
-        for i in range(min(len(g['ai_hand']), 7)):
-            k_cols[i].image("https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/thumb/f/f8/Magic_card_back.jpg/250px-Magic_card_back.jpg", use_container_width=True)
-        st.markdown(f'<div class="hp-bar"><b>🖥️ KAEL</b> | <span style="color:#ff4757;">❤️ {g["ai_hp"]} HP</span></div>', unsafe_allow_html=True)
+with col_main:
+    # --- ZONE KAEL (ADVERSAIRE) ---
+    c1, c2 = st.columns([8, 2])
+    with c1:
+        # Main de Kael (dos des cartes)
+        k_hand_cols = st.columns(max(len(g['ai_hand']), 1))
+        for i in range(len(g['ai_hand'])):
+            k_hand_cols[i].image("https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/thumb/f/f8/Magic_card_back.jpg/250px-Magic_card_back.jpg")
+        st.markdown(f'<div class="hp-bar"><b>🖥️ KAEL</b> | ❤️ {g["ai_hp"]} HP</div>', unsafe_allow_html=True)
+    
+    with c2:
+        st.markdown(f"""<div class="grave-box"><b>🪦 CIMETIÈRE</b><br>
+        Lands: {g['ai_grave']['Lands']}<br>Sorts: {g['ai_grave']['Sorts']}</div>""", unsafe_allow_html=True)
 
-    with col_k_grave:
-        st.markdown(f"""<div class="grave-box"><p style="font-size:0.8em; color:#ef5350;"><b>🪦 CIMETIÈRE KAEL</b></p><hr>
-            <p style="font-size:0.7em; margin:0;">🌍 Terrains: {g['ai_grave']['Lands']}<br>👾 Créas: {g['ai_grave']['Créas']}<br>📜 Sorts: {g['ai_grave']['Sorts']}</p></div>""", unsafe_allow_html=True)
-
-    # --- ZONE DE COMBAT ---
-    st.markdown('<div style="background:#eceff1; border-radius:12px; padding:20px; border:2px solid #b0bec5; min-height:200px;">', unsafe_allow_html=True)
+    # --- CHAMP DE BATAILLE ---
+    st.markdown('<div style="background:#f1f2f6; border-radius:10px; padding:15px; border:2px solid #ccc; min-height:180px;">', unsafe_allow_html=True)
     st.caption("⚔️ CHAMP DE BATAILLE")
     if g['p_board']:
-        cols_b = st.columns(8)
-        for idx, crea in enumerate(g['p_board']):
-            with cols_b[idx % 8]:
-                st.image(get_card_url(crea["name"]), width=100)
-    else:
-        st.write("*(Vide)*")
+        b_cols = st.columns(8)
+        for idx, card in enumerate(g['p_board']):
+            b_cols[idx % 8].image(get_card_url(card['name']), width=90)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- MES TERRAINS ---
+    # --- TERRAINS JOUEUR ---
     st.markdown("#### 🌍 MES TERRAINS")
     if g['p_land']:
-        cols_l = st.columns(10)
+        l_cols = st.columns(10)
         for idx, land in enumerate(g['p_land']):
-            with cols_l[idx % 10]:
+            with l_cols[idx % 10]:
                 angle = 90 if land['tapped'] else 0
-                st.markdown(f'<img src="{get_card_url(land["name"])}" style="transform:rotate({angle}deg); width:80px; border-radius:5px;">', unsafe_allow_html=True)
-                if st.button("TAP", key=f"t_land_{idx}"):
+                st.markdown(f'<img src="{get_card_url(land["name"])}" style="transform:rotate({angle}deg); width:75px;">', unsafe_allow_html=True)
+                if st.button("TAP", key=f"land_tap_{idx}_{land['name']}"):
                     land['tapped'] = not land['tapped']
                     g['p_mana'] += 1 if land['tapped'] else -1
                     st.rerun()
 
-    # --- SECTION JOUEUR ---
+    # --- ACTIONS & MAIN DU JOUEUR ---
     st.write("---")
-    col_atk, col_bloc, col_comb, col_m2, col_fin = st.columns(5)
-    col_atk.button("?? PIOCHE", use_container_width=True)
-    col_fin.button("🏁 FIN TOUR", use_container_width=True, on_click=kael_turn)
+    act_cols = st.columns(5)
+    if act_cols[0].button("?? PIOCHE", key="p_draw_btn"):
+        if g['p_deck']: g['p_hand'].append(g['p_deck'].pop(0))
+        st.rerun()
+    if act_cols[4].button("🏁 FIN TOUR", key="p_end_btn"):
+        kael_turn()
+        st.rerun()
 
-    col_p_cards, col_p_grave = st.columns([8, 2])
-    with col_p_cards:
-        st.markdown(f'<div class="hp-bar"><b>👤 STEEVEN</b> | <span style="color:#e91e63;">❤️ {g["p_hp"]} HP</span> | 💧 Mana: {g["p_mana"]}</div>', unsafe_allow_html=True)
-        p_hand = [c for c in g['p_hand'] if str(c) != "0"]
-        if p_hand:
-            cols_hand = st.columns(len(p_hand))
-            for i, card_name in enumerate(p_hand):
-                with cols_hand[i]:
-                    st.button("Jouer", key=f"play_{i}_{card_name}", on_click=play_card, args=(i,))
-                    url = get_card_url(card_name)
-                    if url: st.image(url, use_container_width=True)
-        else:
-            st.info("Main vide")
+    st.markdown(f'<div class="hp-bar"><b>👤 STEEVEN</b> | ❤️ {g["p_hp"]} HP | 💧 Mana: {g["p_mana"]}</div>', unsafe_allow_html=True)
+    
+    p_hand_display = [c for c in g['p_hand'] if str(c) != "0"]
+    if p_hand_display:
+        h_cols = st.columns(len(p_hand_display))
+        for i, card_name in enumerate(p_hand_display):
+            with h_cols[i]:
+                st.button("Jouer", key=f"play_btn_{i}_{card_name}", on_click=play_card, args=(i,))
+                url = get_card_url(card_name)
+                if url: st.image(url, use_container_width=True)
+    else:
+        st.info("Main vide")
 
     with col_p_grave:
         st.markdown(f"""<div class="grave-box"><p style="font-size:0.8em; color:#42a5f5;"><b>🪦 MON CIMETIÈRE</b></p><hr>

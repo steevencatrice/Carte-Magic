@@ -284,9 +284,11 @@ with col_p_cards:
         
         p_hand = st.session_state.game.get('p_hand', [])
         if p_hand:
-p_cols = st.columns(7)
+if p_hand:
+        p_cols = st.columns(7)  # <--- Il faut un décalage ici !
         for i, card_name in enumerate(p_hand[:7]):
             with p_cols[i]:
+                # ... la suite du code ...
                 # 1. Le bouton en haut
                 st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
                 

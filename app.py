@@ -282,21 +282,23 @@ with col_p_cards:
         </div>
     """, unsafe_allow_html=True)
     
-    p_hand = st.session_state.game.get('p_hand', [])
+    # On force la récupération de la main et on filtre les "0" ou les None
+    p_hand = [c for c in st.session_state.game.get('p_hand', []) if c and str(c) != "0"]
+    
     if p_hand:
-        p_cols = st.columns(7)
+        p_cols = st.columns(len(p_hand[:7])) # Colonnes dynamiques selon le nombre de cartes
         for i, card_name in enumerate(p_hand[:7]):
             with p_cols[i]:
-                # On ne traite la carte que si ce n'est pas un "0"
-                if card_name and str(card_name) != "0":
-                    st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
-                    img_url = get_card(card_name)
+                st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
+                img_url = get_card(card_name)
+                # On vérifie si l'URL semble valide avant d'afficher
+                if img_url and img_url.startswith("http"):
                     st.image(img_url, use_container_width=True)
                 else:
-                    st.write(" ")
+                    # Image de remplacement si l'API échoue
+                    st.code(f"[{card_name}]") 
     else:
-        st.write("*(Main vide)*")
-
+        st.info("Votre main ne contient aucune carte valide.")
 with col_p_grave:
     pg = st.session_state.game.get('p_grave', {})
     st.markdown(f"""

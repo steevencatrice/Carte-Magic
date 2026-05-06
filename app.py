@@ -272,7 +272,6 @@ with col_fin: st.button("🏁 FIN", use_container_width=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # --- ZONE CARTES + CIMETIÈRE ---
-# C'EST CETTE LIGNE QUI MANQUAIT (DÉFINITION DES COLONNES)
 col_p_cards, col_p_grave = st.columns([8, 2])
 
 with col_p_cards:
@@ -288,7 +287,7 @@ with col_p_cards:
         p_cols = st.columns(7)
         for i, card_name in enumerate(p_hand[:7]):
             with p_cols[i]:
-                # On filtre les "0" pour ne pas afficher de texte inutile
+                # On ne traite la carte que si ce n'est pas un "0"
                 if card_name and str(card_name) != "0":
                     st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
                     img_url = get_card(card_name)
@@ -299,7 +298,6 @@ with col_p_cards:
         st.write("*(Main vide)*")
 
 with col_p_grave:
-    # On récupère le dictionnaire du cimetière
     pg = st.session_state.game.get('p_grave', {})
     st.markdown(f"""
         <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
@@ -310,7 +308,5 @@ with col_p_grave:
             <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{pg.get('Sorts', 0)}</b></p>
             <p style="margin:0; font-size:0.8em;">💎 Arts: <b>{pg.get('Artifacts', 0)}</b></p>
             <p style="margin:0; font-size:0.8em;">✨ Ench: <b>{pg.get('Enchants', 0)}</b></p>
-        </div>
-    """, unsafe_allow_html=True)
         </div>
     """, unsafe_allow_html=True)

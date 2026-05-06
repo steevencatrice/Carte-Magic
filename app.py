@@ -300,7 +300,9 @@ with center_col:
                     st.image(get_card(card_name), width=130)
         else:
             st.write("*(Main vide)*")
-            
+
+    # Ton cimetière (BIEN ALIGNÉ À DROITE)
+    with col_p_grave:
         g = st.session_state.game['p_grave']
         st.markdown(f"""
             <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">

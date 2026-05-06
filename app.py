@@ -302,7 +302,7 @@ with center_col:
                     st.image(get_card(card_name), width=150)
 
 # Ligne d'info avec ton Cimetière
-    col_p_cards, col_p_grave = st.columns([8, 2])
+   col_p_cards, col_p_grave = st.columns([8, 2])
 
     with col_p_cards:
         st.markdown(f'<div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between;"><b>👤 STEEVEN</b><span style="color:#e91e63;">❤️ {g.get("p_hp", 20)} HP</span></div>', unsafe_allow_html=True)

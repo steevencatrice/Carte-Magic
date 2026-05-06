@@ -313,11 +313,11 @@ with center_col:
         total_p = sum(p_g.values()) if isinstance(p_g, dict) else len(p_g)
         
         st.markdown(f"""
-            <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
-                <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE ({total_p})</b></p>
                 <hr style="margin:5px 0; border-top:1px solid #42a5f5;">
-                <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{p_g.get('Lands', 0) if isinstance(p_g, dict) else 0}</b></p>
-                <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{p_g.get('Créas', 0) if isinstance(p_g, dict) else 0}</b></p>
-                <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{p_g.get('Sorts', 0) if isinstance(p_g, dict) else 0}</b></p>
+                <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{g.get('Lands', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{g.get('Créas', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{g.get('Sorts', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">💎 Artéfact: <b>{g.get('Artifacts', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g.get('Enchants', 0)}</b></p>
             </div>
         """, unsafe_allow_html=True)

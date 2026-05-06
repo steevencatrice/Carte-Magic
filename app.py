@@ -79,42 +79,33 @@ def kael_turn():
     st.rerun()
 
 
-    # --- LOGIQUE DE JEU ---
-def play_card(card_index):
-    # On récupère l'état global
-    g = st.session_state.game
-    card_name = g['p_hand'][card_index]
-   
+# --- LOGIQUE DE JEU ---
 def get_card(card_name):
     if not card_name or card_name == "0":
         return None
-    # On nettoie le nom et on crée un lien direct vers l'image Scryfall
     clean_name = str(card_name).replace(" ", "+")
     return f"https://api.scryfall.com/cards/named?exact={clean_name}&format=image"
-   
-    if card_name in lands:
-        # 1. On joue le terrain
-        g['p_hand'].pop(card_index)
-        g['p_land'].append({"name": card_name, "tapped": False})
-       
-        # 2. EFFET DU CRABE : Meule 3 cartes si un Crabe est là
-        if any(c['name'] == "Hedron Crab" for c in g['p_board']):
-            for _ in range(3):
-                if g['ai_deck']:
-                    card = g['ai_deck'].pop(0)
-                    g['ai_grave'].append(card)
-        st.rerun()
-       
-    else:
-        # 3. CRÉATURE : Demande du mana
-        if g['p_mana'] >= 1:
-            g['p_hand'].pop(card_index)
-            g['p_mana'] -= 1
-            g['p_board'].append({"name": card_name, "tapped": False})
-            st.rerun()
+
+def play_card(card_index):
+    g = st.session_state.game
+    liste_terrains = ["Island", "Swamp", "Mountain", "Watery Grave", "Polluted Delta"]
+    
+    if 0 <= card_index < len(g['p_hand']):
+        card_name = g['p_hand'].pop(card_index)
+        
+        if card_name in liste_terrains:
+            g['p_land'].append({"name": card_name, "tapped": False})
+            g['history'].insert(0, f"🌍 Steeven joue {card_name}")
+            # Effet Crabe
+            if any(c['name'] == "Hedron Crab" for c in g['p_board']):
+                for _ in range(3):
+                    if g['ai_deck']:
+                        g['ai_grave']['Sorts'] = g['ai_grave'].get('Sorts', 0) + 1
+                        g['ai_deck'].pop(0)
         else:
-            st.error("⚠️ Pas assez de mana ! Engage une Island.")
-    st.rerun()
+            g['p_board'].append({"name": card_name, "tapped": False})
+            g['history'].insert(0, f"⚔️ Steeven joue {card_name}")
+        st.rerun()
 
 
 # --- 3. CHAMP DE BATAILLE ---

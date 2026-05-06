@@ -85,10 +85,12 @@ def play_card(card_index):
     g = st.session_state.game
     card_name = g['p_hand'][card_index]
    
-def play_card(card_index):
-    g = st.session_state.game
-    card_name = g['p_hand'][card_index]
-    lands = ["Island", "Swamp", "Polluted Delta", "Watery Grave"]
+def get_card(card_name):
+    if not card_name or card_name == "0":
+        return None
+    # On nettoie le nom et on crée un lien direct vers l'image Scryfall
+    clean_name = str(card_name).replace(" ", "+")
+    return f"https://api.scryfall.com/cards/named?exact={clean_name}&format=image"
    
     if card_name in lands:
         # 1. On joue le terrain
@@ -282,25 +284,27 @@ with center_col:
 col_p_cards, col_p_grave = st.columns([8, 2])
 
 with col_p_cards:
-    st.markdown(f"""
-        <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <b>👤 STEEVEN</b>
-            <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Affichage de la main
-    p_hand = st.session_state.game.get('p_hand', [])
-    if p_hand:
-        p_cols = st.columns(len(p_hand[:7]))
-        for i, card_name in enumerate(p_hand[:7]):
-            with p_cols[i]:
-                st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
-                # Debug : affiche le nom si l'image ne charge pas
-                st.write(f"ID: {card_name}") 
-                st.image(get_card(card_name), width=120)
-    else:
-        st.write("*(Main vide)*")
+        st.markdown(f"""
+            <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                <b>👤 STEEVEN</b>
+                <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        p_hand = st.session_state.game.get('p_hand', [])
+        if p_hand:
+            p_cols = st.columns(7)
+            for i, card_name in enumerate(p_hand[:7]):
+                with p_cols[i]:
+                    if st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,)):
+                        pass
+                    
+                    # On affiche l'image propre
+                    img = get_card(card_name)
+                    if img:
+                        st.image(img, use_container_width=True)
+        else:
+            st.write("*(Main vide)*")
 
 with col_p_grave:
     g = st.session_state.game.get('p_grave', {})

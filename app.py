@@ -212,11 +212,11 @@ with center_col:
 
     # --- 2. BOUTONS KAEL (Grisés / Dynamiques) ---
     ai_status = g.get('ai_status', 'thinking')
-    kb = st.columns([1, 1, 1, 1, 1.5])
-    kb[0].button("⚔️ ATK", key="btn_ai_at", type="primary" if ai_status == 'attacking' else "secondary", disabled=True, use_container_width=True)
-    kb[1].button("🛡️ BLOC", key="btn_ai_bl", type="primary" if ai_status == 'blocking' else "secondary", disabled=True, use_container_width=True)
-    kb[2].button("⚰️ GRAVE", key="btn_ai_gr", disabled=True, use_container_width=True)
-    kb[3].button("🔍 BIBLIO", key="btn_ai_bi", disabled=True, use_container_width=True)
+    kb = st.columns([1, 1, 1, 1, 1])
+    kb[0].button("?? PIOCHE", key="btn_ai_at", type="primary" if ai_status == 'attacking' else "secondary", disabled=True, use_container_width=True)
+    kb[1].button("🛡️ MAIN 1", key="btn_ai_bl", type="primary" if ai_status == 'blocking' else "secondary", disabled=True, use_container_width=True)
+    kb[2].button("⚔️ COMBAT", key="btn_ai_gr", disabled=True, use_container_width=True)
+    kb[3].button("🛡️ MAIN 2", key="btn_ai_bi", disabled=True, use_container_width=True)
     kb[4].button("🏁 FIN", key="btn_ai_end", type="primary" if ai_status == 'ending' else "secondary", disabled=True, use_container_width=True)
 
 
@@ -263,10 +263,10 @@ with center_col:
     
     # Barre d'actions
     col_atk, col_bloc, col_grave, col_biblio, col_fin = st.columns(5)
-    with col_atk: st.button("⚔️ ATK", use_container_width=True)
-    with col_bloc: st.button("🛡️ BLOC", use_container_width=True)
-    with col_grave: st.button("⚰️ GRAVE", use_container_width=True)
-    with col_biblio: st.button("🔍 BIBLIO", use_container_width=True)
+    with col_atk: st.button("?? PIOCHE", use_container_width=True)
+    with col_bloc: st.button("🛡️ MAIN 1", use_container_width=True)
+    with col_grave: st.button("⚔️ COMBAT", use_container_width=True)
+    with col_biblio: st.button("🛡️ MAIN 2", use_container_width=True)
     with col_fin: st.button("🏁 FIN", use_container_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)

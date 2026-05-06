@@ -290,17 +290,17 @@ with center_col:
         """, unsafe_allow_html=True)
         
        # Affichage de la main (Correction forcée)
-        if st.session_state.game['p_hand']:
+       if st.session_state.game['p_hand']:
             p_cols = st.columns(7)
             for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
                 with p_cols[i]:
-                    # Bouton jouer
+                    # Le bouton pour jouer
                     if st.button("Jouer", key=f"btn_p_play_{i}"):
                         play_card(i)
                     
-                    # On affiche l'image directement
-                img_url = get_card(card_name)
-                st.image(img_url, width=120)
+                    # L'image doit être affichée ici, bien alignée
+                    img_url = get_card(card_name)
+                    st.image(img_url, width=120)
         else:
             st.write("*(Main vide)*")
 

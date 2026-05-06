@@ -289,20 +289,20 @@ with center_col:
             </div>
         """, unsafe_allow_html=True)
         
-        # Ce bloc doit être décalé vers la droite
+        # Affichage de la main (Correction forcée)
         if st.session_state.game['p_hand']:
             p_cols = st.columns(7)
             for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
                 with p_cols[i]:
+                    # Bouton pour jouer la carte
                     if st.button("Jouer", key=f"btn_p_play_{i}"):
                         play_card(i)
                     
-                    img_url = get_card(card_name)
-                    st.image(img_url, width=120)
+                    # Affichage direct de l'image
+                    st.image(get_card(card_name), width=120)
         else:
             st.write("*(Main vide)*")
- # --- TON CIMETIÈRE (BLEU ET FRANÇAIS) ---
-    with col_p_grave:
+            
         g = st.session_state.game['p_grave']
         st.markdown(f"""
             <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">

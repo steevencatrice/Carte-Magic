@@ -185,36 +185,31 @@ _, center_col, _ = st.columns([0.5, 9, 0.5])
 
 
 with center_col:
-    # --- 1. SECTION KAEL (Haut) ---
-    col_k_cards, col_k_grave = st.columns([8, 2])
+ # --- 1. SECTION KAEL (Haut) ---
+    # On définit les colonnes ici pour qu'elles existent avant d'être utilisées
+    col_k_cards, col_k_grave = st.columns([8, 2]) 
+    
     with col_k_cards:
-        # Main de Kael
+        # Main de Kael (dos des cartes)
         k_cols = st.columns(7)
         for i in range(7):
             k_cols[i].image("https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/thumb/f/f8/Magic_card_back.jpg/250px-Magic_card_back.jpg", use_container_width=True)
-       
-        # Barre HP Kael
         st.markdown(f'<div style="background:white; padding:5px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-top:10px;"><b>🖥️ KAEL</b> | <span style="color:#ff4757;">❤️ {g["ai_hp"]} HP</span></div>', unsafe_allow_html=True)
 
-
-   # --- CIMETIÈRE (IA) ---
-with col_p_grave:
-    g_data = st.session_state.game['p_grave']
-    # Calcul du total des cartes présentes dans le dictionnaire
-    total_cards = sum(g_data.values()) 
-    
-    st.markdown(f"""
-        <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
-            <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE ({total_cards})</b></p>
-            <hr style="margin:5px 0; border-top:1px solid #42a5f5;">
-            <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{g_data.get('Lands', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{g_data.get('Créas', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{g_data.get('Sorts', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">💎 Artéfact: <b>{g_data.get('Artifacts', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g_data.get('Enchants', 0)}</b></p>
-        </div>
-    """, unsafe_allow_html=True)
-
+    with col_k_grave:
+        # On récupère les données du cimetière de l'IA
+        ai_g = g.get('ai_grave', {'Créas': 0, 'Sorts': 0, 'Lands': 0, 'Artifacts': 0, 'Enchants': 0})
+        total_ai = sum(ai_g.values()) if isinstance(ai_g, dict) else len(ai_g)
+        
+        st.markdown(f"""
+            <div style="border:2px solid #ef5350; border-radius:10px; padding:10px; background:white;">
+                <p style="margin:0; font-size:0.8em; color:#ef5350;"><b>🪦 CIMETIÈRE ({total_ai})</b></p>
+                <hr style="margin:5px 0;">
+                <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{ai_g.get('Lands', 0) if isinstance(ai_g, dict) else 0}</b></p>
+                <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{ai_g.get('Créas', 0) if isinstance(ai_g, dict) else 0}</b></p>
+                <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{ai_g.get('Sorts', 0) if isinstance(ai_g, dict) else 0}</b></p>
+            </div>
+        """, unsafe_allow_html=True)
 
     # --- ESPACE ICI ---
     st.write("") # Crée un saut de ligne standard
@@ -306,21 +301,23 @@ with col_p_grave:
                         play_card(i)
                     st.image(get_card(card_name), width=150)
 
+# Ligne d'info avec ton Cimetière
+    col_p_cards, col_p_grave = st.columns([8, 2])
 
-# --- TON CIMETIÈRE (STEEVEN) ---
-with col_p_grave:
-    g_data = st.session_state.game['p_grave']
-    # Calcul du total des cartes présentes dans le dictionnaire
-    total_cards = sum(g_data.values()) 
-    
-    st.markdown(f"""
-        <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
-            <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE ({total_cards})</b></p>
-            <hr style="margin:5px 0; border-top:1px solid #42a5f5;">
-            <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{g_data.get('Lands', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{g_data.get('Créas', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{g_data.get('Sorts', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">💎 Artéfact: <b>{g_data.get('Artifacts', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g_data.get('Enchants', 0)}</b></p>
-        </div>
-    """, unsafe_allow_html=True)
+    with col_p_cards:
+        st.markdown(f'<div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between;"><b>👤 STEEVEN</b><span style="color:#e91e63;">❤️ {g.get("p_hp", 20)} HP</span></div>', unsafe_allow_html=True)
+        # ... (ton code pour afficher la main ici) ...
+
+    with col_p_grave:
+        p_g = g.get('p_grave', {'Créas': 0, 'Sorts': 0, 'Lands': 0, 'Artifacts': 0, 'Enchants': 0})
+        total_p = sum(p_g.values()) if isinstance(p_g, dict) else len(p_g)
+        
+        st.markdown(f"""
+            <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
+                <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE ({total_p})</b></p>
+                <hr style="margin:5px 0; border-top:1px solid #42a5f5;">
+                <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{p_g.get('Lands', 0) if isinstance(p_g, dict) else 0}</b></p>
+                <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{p_g.get('Créas', 0) if isinstance(p_g, dict) else 0}</b></p>
+                <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{p_g.get('Sorts', 0) if isinstance(p_g, dict) else 0}</b></p>
+            </div>
+        """, unsafe_allow_html=True)

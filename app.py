@@ -278,10 +278,11 @@ with center_col:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-# Ligne d'info avec PV et Coeur
+# 1. Création des deux colonnes : Main (8) et Cimetière (2)
     col_p_cards, col_p_grave = st.columns([8, 2])
 
     with col_p_cards:
+        # Barre de profil avec PV
         st.markdown(f"""
             <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                 <b>👤 STEEVEN</b>
@@ -289,19 +290,19 @@ with center_col:
             </div>
         """, unsafe_allow_html=True)
         
-        # Affichage de la main
+        # Affichage de ta main avec les images
         if st.session_state.game['p_hand']:
             p_cols = st.columns(7)
             for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
                 with p_cols[i]:
                     if st.button("Jouer", key=f"btn_p_play_{i}"):
                         play_card(i)
-                    # Affichage de la carte
+                    # Commande pour afficher l'image de la carte
                     st.image(get_card(card_name), width=130)
         else:
             st.write("*(Main vide)*")
 
-    # Ton cimetière (BIEN ALIGNÉ À DROITE)
+    # 2. Ton cimetière (Aligné à droite de ta main)
     with col_p_grave:
         g = st.session_state.game['p_grave']
         st.markdown(f"""

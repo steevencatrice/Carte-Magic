@@ -271,41 +271,44 @@ with center_col:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-# --- COPIE À PARTIR D'ICI ---
+# --- SECTION FINALE CORRIGÉE ---
 col_p_cards, col_p_grave = st.columns([8, 2])
 
 with col_p_cards:
-        st.markdown(f"""
-            <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                <b>👤 STEEVEN</b>
-                <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
-            </div>
-        """, unsafe_allow_html=True)
-        
-p_hand = st.session_state.game.get('p_hand', [])
-if p_hand:
-    p_cols = st.columns(7)
-    for i, card_name in enumerate(p_hand[:7]):
-        with p_cols[i]:
-            # 1. Le bouton pour jouer
-            st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
-            
-            # 2. L'IMAGE DE TA CARTE (C'est cette ligne qui manque !)
-            img_url = get_card(card_name)
-            st.image(img_url, use_container_width=True)
+    st.markdown(f"""
+        <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+            <b>👤 STEEVEN</b>
+            <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # On récupère la main
+    p_hand = st.session_state.game.get('p_hand', [])
+    
+    if p_hand:
+        p_cols = st.columns(7)
+        for i, card_name in enumerate(p_hand[:7]):
+            with p_cols[i]:
+                # On ne traite la carte que si ce n'est pas un "0"
+                if card_name and card_name != "0":
+                    st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
+                    img_url = get_card(card_name)
+                    st.image(img_url, use_container_width=True)
+                else:
+                    st.write("---")
     else:
-        st.write("*(Main vide)*")
+        st.info("Votre main est vide.")
+
 with col_p_grave:
-    g = st.session_state.game.get('p_grave', {})
+    pg = st.session_state.game.get('p_grave', {})
     st.markdown(f"""
         <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
             <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE</b></p>
             <hr style="margin:5px 0; border-top:1px solid #42a5f5;">
-            <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{g.get('Lands', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">👾 Créas: <b>{g.get('Créas', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{g.get('Sorts', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">💎 Arts: <b>{g.get('Artifacts', 0)}</b></p>
-            <p style="margin:0; font-size:0.8em;">✨ Ench: <b>{g.get('Enchants', 0)}</b></p>
+            <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{pg.get('Lands', 0)}</b></p>
+            <p style="margin:0; font-size:0.8em;">👾 Créas: <b>{pg.get('Créas', 0)}</b></p>
+            <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{pg.get('Sorts', 0)}</b></p>
+            <p style="margin:0; font-size:0.8em;">💎 Arts: <b>{pg.get('Artifacts', 0)}</b></p>
+            <p style="margin:0; font-size:0.8em;">✨ Ench: <b>{pg.get('Enchants', 0)}</b></p>
         </div>
     """, unsafe_allow_html=True)
-# --- ARRÊTE LA COPIE ICI ---

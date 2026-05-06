@@ -282,22 +282,20 @@ with col_p_cards:
             </div>
         """, unsafe_allow_html=True)
         
-        p_hand = st.session_state.game.get('p_hand', [])
-        if p_hand:
-if p_hand:
-        p_cols = st.columns(7)  # <--- Il faut un décalage ici !
+p_hand = st.session_state.game.get('p_hand', [])
+    if p_hand:
+        p_cols = st.columns(7)
         for i, card_name in enumerate(p_hand[:7]):
             with p_cols[i]:
-                # ... la suite du code ...
-                # 1. Le bouton en haut
+                # On place le bouton
                 st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
                 
-                # 2. L'image en dessous (NON indentée sous le 'if st.button')
+                # On affiche l'image
                 img = get_card(card_name)
                 if img:
                     st.image(img, use_container_width=True)
-        else:
-            st.write("*(Main vide)*")
+    else:
+        st.write("*(Main vide)*")
 
 with col_p_grave:
     g = st.session_state.game.get('p_grave', {})

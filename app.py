@@ -278,7 +278,7 @@ with center_col:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Ligne d'info avec PV et Coeur
+# Ligne d'info avec PV et Coeur
     col_p_cards, col_p_grave = st.columns([8, 2])
 
     with col_p_cards:
@@ -289,17 +289,15 @@ with center_col:
             </div>
         """, unsafe_allow_html=True)
         
-        # Affichage de la main (Correction forcée)
+        # Affichage de la main
         if st.session_state.game['p_hand']:
             p_cols = st.columns(7)
             for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
                 with p_cols[i]:
-                    # Bouton pour jouer la carte
                     if st.button("Jouer", key=f"btn_p_play_{i}"):
                         play_card(i)
-                    
-                    # Affichage direct de l'image
-                    st.image(get_card(card_name), width=120)
+                    # Affichage de la carte
+                    st.image(get_card(card_name), width=130)
         else:
             st.write("*(Main vide)*")
             

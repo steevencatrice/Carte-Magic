@@ -208,6 +208,8 @@ with center_col:
                 <p style="margin:0; font-size:0.8em;">🌍 Terrains: <b>{ai_g.get('Lands', 0) if isinstance(ai_g, dict) else 0}</b></p>
                 <p style="margin:0; font-size:0.8em;">👾 Créature: <b>{ai_g.get('Créas', 0) if isinstance(ai_g, dict) else 0}</b></p>
                 <p style="margin:0; font-size:0.8em;">📜 Sorts: <b>{ai_g.get('Sorts', 0) if isinstance(ai_g, dict) else 0}</b></p>
+                <p style="margin:0; font-size:0.8em;">💎 Artéfact: <b>{g.get('Artifacts', 0)}</b></p>
+                <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g.get('Enchants', 0)}</b></p>
             </div>
         """, unsafe_allow_html=True)
 

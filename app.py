@@ -283,9 +283,18 @@ with col_p_cards:
         """, unsafe_allow_html=True)
         
 p_hand = st.session_state.game.get('p_hand', [])
-if p_hand:
-    p_cols = st.columns(7)
-
+    if p_hand:
+        p_cols = st.columns(7)
+        for i, card_name in enumerate(p_hand[:7]):
+            with p_cols[i]:
+                # 1. Le bouton pour jouer
+                st.button("Jouer", key=f"btn_p_play_{i}", on_click=play_card, args=(i,))
+                
+                # 2. L'IMAGE DE TA CARTE (C'est cette ligne qui manque !)
+                img_url = get_card(card_name)
+                st.image(img_url, use_container_width=True)
+    else:
+        st.write("*(Main vide)*")
 with col_p_grave:
     g = st.session_state.game.get('p_grave', {})
     st.markdown(f"""

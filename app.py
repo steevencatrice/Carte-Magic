@@ -110,7 +110,7 @@ CARD_DB = {
         "type": "Terrain",
         "mana": "💧",
         "desc": "Terrain de base : Génère 1 mana Bleu."
-    }, #
+   },, # <--- La virgule doit être ici
     "Swamp": {
         "name_fr": "Marais",
         "type": "Terrain",

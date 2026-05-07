@@ -239,7 +239,6 @@ DECKS = {
     "Contrôle (Bleu)": ["Archimage's Charm"]*4 + ["Counterspell"]*4 + ["Guile"]*2 + ["Opt"]*4 + ["Mana Leak"]*4 + ["Negate"]*4 + ["Essence Scatter"]*4 + ["Visions of Beyond"]*4 + ["Island"]*24,
     "Burn (Rouge)":    ["Ball Lightning"]*4 + ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Skewer the Critics"]*4 + ["Rift Bolt"]*4 + ["Fireblast"]*4 + ["Shock"]*4 + ["Incinerate"]*4 + ["Chain Lightning"]*4 + ["Mountain"]*24
 }
-}
 
 # --- CONFIGURATION DANS LA SIDEBAR ---
 st.sidebar.header("🕹️ OPTIONS DU DUEL")

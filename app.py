@@ -248,11 +248,11 @@ DECKS = {
     
 # --- ÉCRAN D'ACCUEIL (MENU) ---
 if 'game' not in st.session_state or not st.session_state.game.get('started', False):
-    st.title("⚔️ MAGIC THE GATHERING")
-   st.subheader("Menu Principal")
+    st.title("⚔️ MAGIC THE GATHERING")        # <--- Alignés ici !
+    st.subheader("Menu Principal")             # <--- Alignés ici !
     
     # --- ÉTAPE 2 : AFFICHAGE DES STATS ---
-    col_stats1, col_stats2 = st.columns(2)
+    col_stats1, col_stats2 = st.columns(2)     # <--- Alignés ici !
     col_stats1.metric("🏆 Victoires", st.session_state.stats['victoires'])
     col_stats2.metric("❌ Défaites", st.session_state.stats['defaites'])
     

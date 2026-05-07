@@ -284,12 +284,46 @@ if st.sidebar.button("Début de la partie"):
     }
     st.rerun()
 
-# --- ÉCRAN D'ACCUEIL OU JEU ---
+# --- ÉCRAN D'ACCUEIL ---
 if 'game' not in st.session_state or not st.session_state.game.get('started', False):
     st.title("⚔️ MAGIC THE GATHERING")
     st.subheader("Menu Principal")
-    st.info(f"Steeven (**{choix_p}**) VS Kael (**{choix_ai}**)")
-    st.write("Sélectionne tes options dans la barre latérale puis clique sur le bouton pour lancer le duel.")
+    
+    # On déplace les sélections au centre
+    col_a, col_b = st.columns(2)
+    with col_a:
+        choix_p = st.selectbox("Ton Deck (Steeven) :", list(DECKS.keys()), index=0)
+    with col_b:
+        choix_ai = st.selectbox("Deck de Kael :", list(DECKS.keys()), index=1)
+    
+    diff_ai = st.select_slider("Niveau de difficulté de Kael :", options=range(1, 11), value=5)
+    
+    st.write("---")
+    
+    # On ajoute le bouton de démarrage ici aussi !
+    if st.button("🚀 LANCER LE DUEL"):
+        # On appelle la même logique que le bouton sidebar
+        p_deck = DECKS[choix_p][:]
+        ai_deck = DECKS[choix_ai][:]
+        random.shuffle(p_deck)
+        random.shuffle(ai_deck)
+        
+        st.session_state.game = {
+            'started': True,
+            'p_hp': 20, 'ai_hp': 20, 'p_mana': 0,
+            'p_deck': p_deck[7:], 'p_hand': p_deck[:7],
+            'p_land': [], 'p_board': [],
+            'p_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0},
+            'ai_deck': ai_deck[7:], 'ai_hand': ai_deck[:7],
+            'ai_land': [], 'ai_board': [],
+            'ai_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0},
+            'history': ["Début de la partie"],
+            'chat': [{"u": "Kael", "m": "Bonne chance Steeven !"}],
+            'phase': "PRINCIPALE 1",
+            'diff_ai': diff_ai
+        }
+        st.rerun()
+
     st.stop()
 
 g = st.session_state.game # On crée un raccourci pour plus tard

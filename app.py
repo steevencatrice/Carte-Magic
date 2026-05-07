@@ -117,6 +117,25 @@ CARD_DB = {
         "mana": "💀",
         "desc": "Terrain de base : Génère 1 mana Noir."
     }
+    "Archimage's Charm":   {"name_fr": "Charme de l'archimage",   "type": "Sort",     "mana": "💧💧💧", "desc": "Contre / Pioche 2 / Vole coût 1."},
+    "Counterspell":        {"name_fr": "Contresort",              "type": "Sort",     "mana": "💧💧",   "desc": "Annule le sort ciblé."},
+    "Guile":               {"name_fr": "Ruse",                    "type": "Créature", "mana": "💧💧💧3", "desc": "6/6 imblocable. Si tu contres, joue le sort gratos."},
+    "Opt":                 {"name_fr": "Opter",                   "type": "Sort",     "mana": "💧",     "desc": "Regard 1, puis pioche 1."},
+    "Mana Leak":           {"name_fr": "Fuite de mana",           "type": "Sort",     "mana": "💧1",    "desc": "Contre sauf si l'adversaire paie 3."},
+    "Negate":              {"name_fr": "Négation",                "type": "Sort",     "mana": "💧1",    "desc": "Contre sort non-créature."},
+    "Essence Scatter":     {"name_fr": "Dispersion d'essence",    "type": "Sort",     "mana": "💧1",    "desc": "Contre sort de créature."},
+    "Visions of Beyond":   {"name_fr": "Visions de l'au-delà",    "type": "Sort",     "mana": "💧",     "desc": "Pioche 1 (ou 3 si cimetière > 20)."},
+    "Island":              {"name_fr": "Île",                     "type": "Terrain",  "mana": "",       "desc": "Ajoute 💧"},
+    "Lava Spike":          {"name_fr": "Pointe de lave",          "type": "Sort",     "mana": "🔥",     "desc": "3 blessures au joueur."},
+    "Lightning Bolt":      {"name_fr": "Foudre",                  "type": "Sort",     "mana": "🔥",     "desc": "3 blessures n'importe où."},
+    "Skewer the Critics":  {"name_fr": "Embrocher les critiques", "type": "Sort",     "mana": "🔥2",    "desc": "3 blessures. Spectacle : 🔥."},
+    "Rift Bolt":           {"name_fr": "Foudre de faille",        "type": "Sort",     "mana": "🔥2",    "desc": "3 blessures. Suspension : 🔥."},
+    "Fireblast":           {"name_fr": "Salve de feu",            "type": "Sort",     "mana": "🔥2",    "desc": "4 blessures. Sacrifice 2 Montagnes pour gratuit."},
+    "Ball Lightning":      {"name_fr": "Boule fulgurante",        "type": "Créature", "mana": "🔥🔥🔥", "desc": "6/1 Piétinement, Célérité. Meurt à la fin du tour."},
+    "Shock":               {"name_fr": "Choc",                    "type": "Sort",     "mana": "🔥",     "desc": "2 blessures n'importe où."},
+    "Incinerate":          {"name_fr": "Incinération",            "type": "Sort",     "mana": "🔥1",    "desc": "3 blessures, pas de régénération."},
+    "Chain Lightning":     {"name_fr": "Chaîne d'éclairs",        "type": "Sort",     "mana": "🔥",     "desc": "3 blessures. Peut être dupliqué."},
+    "Mountain":            {"name_fr": "Montagne",                "type": "Terrain",  "mana": "",       "desc": "Ajoute 🔥"},
 }
 
 
@@ -215,21 +234,53 @@ st.markdown("""
 import random
 
 
-# --- DECKS ---
 DECKS = {
-    "Meule": ["Hedron Crab"]*4 + ["Glimpse the Unthinkable"]*4 + ["Archive Trap"]*4 + ["Tasha's Hideous Laughter"]*4 + ["Jace's Phantasm"]*4 + ["Dark Ritual"]*4 + ["Visions of Beyond"]*3 + ["Polluted Delta"]*4 + ["Watery Grave"]*4 + ["Island"]*15 + ["Swamp"]*10,
-    "Burn": ["Ball Lightning"]*4 + ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Skewer the Critics"]*4 + ["Rift Bolt"]*4 + ["Fireblast"]*4 + ["Shock"]*4 + ["Incinerate"]*4 + ["Chain Lightning"]*4 + ["Mountain"]*24
+    "Meule (Bleu / Noir)": ["Hedron Crab"]*4 + ["Glimpse the Unthinkable"]*4 + ["Archive Trap"]*4 + ["Tasha's Hideous Laughter"]*4 + ["Jace's Phantasm"]*4 + ["Dark Ritual"]*4 + ["Visions of Beyond"]*3 + ["Polluted Delta"]*4 + ["Watery Grave"]*24,
+    "Contrôle (Bleu)": ["Archimage's Charm"]*4 + ["Counterspell"]*4 + ["Guile"]*2 + ["Opt"]*4 + ["Mana Leak"]*4 + ["Negate"]*4 + ["Essence Scatter"]*4 + ["Visions of Beyond"]*4 + ["Island"]*24,
+    "Burn (Rouge)":    ["Ball Lightning"]*4 + ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Skewer the Critics"]*4 + ["Rift Bolt"]*4 + ["Fireblast"]*4 + ["Shock"]*4 + ["Incinerate"]*4 + ["Chain Lightning"]*4 + ["Mountain"]*24
+}
 }
 
+# --- CONFIGURATION DANS LA SIDEBAR ---
+st.sidebar.header("🕹️ OPTIONS DU DUEL")
+
+# Sélection des decks (basée sur les clés de ton dictionnaire DECKS)
+# On utilise list(DECKS.keys()) pour que ça s'actualise tout seul
+choix_p = st.sidebar.selectbox("Mon Deck (Steeven) :", list(DECKS.keys()), index=0)
+choix_ai = st.sidebar.selectbox("Deck de Kael :", list(DECKS.keys()), index=1)
+
+st.sidebar.markdown("---")
+
+# Réglage de la difficulté (de 1 à 10)
+diff_ai = st.sidebar.select_slider(
+    "Niveau de l'IA (Kael) :",
+    options=range(1, 11),
+    value=5
+)
+
+st.sidebar.markdown("---")
 
 
-
-# --- INITIALISATION ---
-if 'game' not in st.session_state:
-    p_deck = DECKS["Meule"][:]
-    ai_deck = DECKS["Burn"][:]
+# --- INITIALISATION DYNAMIQUE ---
+if st.sidebar.button("Début de la partie") or 'game' not in st.session_state:
+    # On récupère les decks basés sur les sélections de la sidebar
+    p_deck = DECKS[choix_p][:]
+    ai_deck = DECKS[choix_ai][:]
+    
     random.shuffle(p_deck)
     random.shuffle(ai_deck)
+    
+    # On enregistre tout dans le session_state
+    st.session_state.game = {
+        'p_deck': p_deck,
+        'ai_deck': ai_deck,
+        'p_hand': [p_deck.pop() for _ in range(7)],
+        'ai_hand': [ai_deck.pop() for _ in range(7)],
+        'p_hp': 20,
+        'ai_hp': 20,
+        'diff_ai': diff_ai, # On stocke la difficulté ici pour plus tard
+        'turn': 'player'
+    }
 
 
     st.session_state.game = {

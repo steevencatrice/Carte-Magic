@@ -283,13 +283,23 @@ if 'game' not in st.session_state or not st.session_state.game.get('started', Fa
 
 # --- SI LA PARTIE EST LANCÉE ---
 else:
-    # Bouton de retour dans la barre latérale
     with st.sidebar:
         st.write("---")
-        if st.button("⬅️ Retour au Menu Principal"):
-            st.session_state.game['started'] = False
-            st.rerun()
-
+        # On utilise un "popover" pour la confirmation (plus propre)
+        with st.popover("❌ Abandonner le Duel"):
+            st.warning("Es-tu sûr de vouloir quitter ?")
+            st.error("⚠️ Quitter sans sauvegarder sera compté comme une **DÉFAITE** dans tes stats.")
+            
+            # Le bouton de confirmation finale
+            if st.button("Confirmer l'abandon"):
+                # Ici on pourra plus tard ajouter : st.session_state.stats['defaites'] += 1
+                st.session_state.game['started'] = False
+                st.rerun()
+        
+        # Optionnel : bouton de sauvegarde (pour plus tard)
+        if st.button("💾 Sauvegarder et Quitter"):
+            st.info("Sauvegarde bientôt disponible...")
+            # Ici on pourra mettre la logique de sauvegarde SQL ou fichier
     # Ton raccourci habituel
     g = st.session_state.game
 

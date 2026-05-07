@@ -243,11 +243,6 @@ DECKS = {
 
 
 # --- INITIALISATION DYNAMIQUE ---
-if st.sidebar.button("Début de la partie"):
-    p_deck = DECKS[choix_p][:]
-    ai_deck = DECKS[choix_ai][:]
-    random.shuffle(p_deck)
-    random.shuffle(ai_deck)
     
     st.session_state.game = {
         'started': True, 

@@ -284,12 +284,11 @@ if st.sidebar.button("Début de la partie"):
     }
     st.rerun()
 
-# --- ÉCRAN D'ACCUEIL ---
+# --- ÉCRAN D'ACCUEIL (MENU) ---
 if 'game' not in st.session_state or not st.session_state.game.get('started', False):
     st.title("⚔️ MAGIC THE GATHERING")
     st.subheader("Menu Principal")
     
-    # On déplace les sélections au centre
     col_a, col_b = st.columns(2)
     with col_a:
         choix_p = st.selectbox("Ton Deck (Steeven) :", list(DECKS.keys()), index=0)
@@ -298,11 +297,7 @@ if 'game' not in st.session_state or not st.session_state.game.get('started', Fa
     
     diff_ai = st.select_slider("Niveau de difficulté de Kael :", options=range(1, 11), value=5)
     
-    st.write("---")
-    
-    # On ajoute le bouton de démarrage ici aussi !
-    if st.button("🚀 LANCER LE DUEL"):
-        # On appelle la même logique que le bouton sidebar
+    if st.button("🚀 LANCER LE DUEL", use_container_width=True):
         p_deck = DECKS[choix_p][:]
         ai_deck = DECKS[choix_ai][:]
         random.shuffle(p_deck)
@@ -323,8 +318,19 @@ if 'game' not in st.session_state or not st.session_state.game.get('started', Fa
             'diff_ai': diff_ai
         }
         st.rerun()
-
     st.stop()
+
+# --- SI LA PARTIE EST LANCÉE ---
+else:
+    # Bouton de retour dans la barre latérale
+    with st.sidebar:
+        st.write("---")
+        if st.button("⬅️ Retour au Menu Principal"):
+            st.session_state.game['started'] = False
+            st.rerun()
+
+    # Ton raccourci habituel
+    g = st.session_state.game
 
 g = st.session_state.game # On crée un raccourci pour plus tard
 

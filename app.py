@@ -5,6 +5,7 @@ import streamlit as st
 g = st.session_state
 
 
+
 # --- ÉTAPE 2 : LA BARRE LATÉRALE AVEC LES DEUX FENÊTRES ---
 with st.sidebar:
     st.title("🎮 Magic the Gathering")
@@ -298,6 +299,24 @@ if st.sidebar.button("Début de la partie") or 'game' not in st.session_state:
 
 g = st.session_state.game # On crée un raccourci pour plus tard
 
+# Au début de ton affichage principal
+if 'game' not in st.session_state:
+    # --- ÉCRAN D'ACCUEIL ---
+    st.title("⚔️ MAGIC : THE GATHERING")
+    st.subheader("Préparez votre duel contre Kael")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.info(f"Votre deck : **{choix_p}**")
+    with col2:
+        st.warning(f"Deck de Kael : **{choix_ai}**")
+    
+    st.write("Réglages terminés ? Appuyez sur le bouton dans la barre latérale pour commencer.")
+    
+else:
+    # --- PLATEAU DE JEU (Tout ton code actuel d'affichage) ---
+    # Ici tu mets tout ce qui affiche les cartes, les HP, etc.
+    render_battlefield()
 
 # --- LES FONCTIONS (Le Cerveau du Jeu) ---
 

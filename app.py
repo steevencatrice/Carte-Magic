@@ -1,12 +1,197 @@
 import streamlit as st
+
+
+# --- ÉTAPE 1 : ON DÉFINIT LE SAC À DOS 'g' (OBLIGATOIRE ICI) ---
+g = st.session_state
+
+
+# --- ÉTAPE 2 : LA BARRE LATÉRALE AVEC LES DEUX FENÊTRES ---
+with st.sidebar:
+    st.title("🎮 Magic the Gathering")
+   
+    # 📜 FENÊTRE 1 : L'HISTORIQUE (Les actions de jeu uniquement)
+    st.subheader("📜 Historique du Duel")
+    if 'history' not in g:
+        g['history'] = ["Début de la partie"]
+   
+    # On affiche les 15 dernières actions de jeu pour que ce soit clair
+    hist_text = "\n".join(g['history'][-15:])
+    st.text_area("Actions", value=hist_text, height=180, disabled=True, key="hist_area")
+
+
+    st.markdown("---")
+
+
+    # 💬 FENÊTRE 2 : LE CHAT (Ta discussion avec l'IA)
+    st.subheader("💬 Discussion avec Kael")
+    if 'chat_msgs' not in g:
+        g['chat_msgs'] = ["Kael : Je t'attends, Steeven. Tu es prêt ?"]
+   
+    chat_text = "\n".join(g['chat_msgs'])
+    st.text_area("Chat", value=chat_text, height=220, disabled=True, key="chat_area")
+
+
+    # Zone de saisie pour parler à l'IA
+    with st.form(key="chat_input_form", clear_on_submit=True):
+        user_input = st.text_input("Lui dire quelque chose :", placeholder="Taquine-le...")
+        if st.form_submit_button("Envoyer") and user_input:
+            g['chat_msgs'].append(f"Steeven : {user_input}")
+            # Réponse auto de Kael
+            g['chat_msgs'].append("Kael : On verra si tu es aussi fort avec tes cartes qu'avec tes mots.")
+            st.rerun()
+
+
+    # ⚙️ LE RESTE (Paramètres / Jetons)
+    st.markdown("---")
+    with st.expander("⚙️ PARAMÈTRES & JETONS"):
+        st.write("💎 Jetons actifs :")
+        for t in g.get('player_tokens', []):
+            st.write(f"• {t['name']}")
+
+
+# --- ÉTAPE 1 : MISE À JOUR DE LA BIBLIOTHÈQUE AVEC SYMBOLES ---
+CARD_DB = {
+    "Hedron Crab": {
+        "name_fr": "Crabe d'Hédron",
+        "type": "Créature",
+        "mana": "💧",
+        "desc": "Toucheterre — À chaque fois qu'un terrain arrive sur le champ de bataille sous votre contrôle, le joueur ciblé meule trois cartes."
+    },
+    "Polluted Delta": {
+        "name_fr": "Delta pollué",
+        "type": "Terrain",
+        "mana": "🔘",
+        "desc": "Engagez, payez 1 PV, sacrifiez le Delta pollué : Cherchez dans votre bibliothèque une carte d'Île ou de Marais et mettez-la sur le champ de bataille."
+    },
+    "Tasha's Hideous Laughter": {
+        "name_fr": "Rire atroce de Tasha",
+        "type": "Rituel",
+        "mana": "🔘💧💧",
+        "desc": "Chaque adversaire exile les cartes du dessus de sa bibliothèque jusqu'à ce qu'il ait exilé des cartes d'une valeur de mana totale de 20 ou plus."
+    },
+    "Glimpse the Unthinkable": {
+        "name_fr": "Aperçu de l'inimaginable",
+        "type": "Rituel",
+        "mana": "💧💀",
+        "desc": "Le joueur ciblé meule dix cartes."
+    },
+    "Archive Trap": {
+        "name_fr": "Piège d'archive",
+        "type": "Éphémère",
+        "mana": "🔘🔘🔘💧💧 (ou 0)",
+        "desc": "Si un adversaire a cherché dans sa bibliothèque ce tour-ci, vous pouvez payer 0 au lieu de payer le coût de mana de ce sort. Le joueur ciblé meule treize cartes."
+    },
+    "Dark Ritual": {
+        "name_fr": "Messe noire",
+        "type": "Éphémère",
+        "mana": "💀",
+        "desc": "Ajoutez 💀💀💀 à votre réserve de mana."
+    },
+    "Jace's Phantasm": {
+        "name_fr": "Phantasme de Jace",
+        "type": "Créature",
+        "mana": "💧",
+        "desc": "Vol. Le Phantasme de Jace gagne +4/+4 tant qu'un adversaire a au moins dix cartes dans son cimetière."
+    },
+    "Visions of Beyond": {
+        "name_fr": "Visions de l'au-delà",
+        "type": "Éphémère",
+        "mana": "💧",
+        "desc": "Piochez une carte. Si un cimetière contient vingt cartes ou plus, piochez trois cartes à la place."
+    },
+    "Watery Grave": {
+        "name_fr": "Tombeau aquatique",
+        "type": "Terrain",
+        "mana": "🔘",
+        "desc": "(💧 ou 💀) Arrive engagé à moins que vous ne payiez 2 points de vie. Est une Île et un Marais."
+    },
+    "Island": {
+        "name_fr": "Île",
+        "type": "Terrain",
+        "mana": "💧",
+        "desc": "Terrain de base : Génère 1 mana Bleu."
+    },
+    "Swamp": {
+        "name_fr": "Marais",
+        "type": "Terrain",
+        "mana": "💀",
+        "desc": "Terrain de base : Génère 1 mana Noir."
+    }
+}
+
+
+
+
+# --- ÉTAPE 2 : LE MOTEUR D'AFFICHAGE AVEC BULLE TRADUITE ---
+
+
+
+
+def show_card(name, width=None):
+    """Affiche une carte avec une bulle de traduction système (Tooltip) au survol."""
+    # 1. On récupère les données dans ta CARD_DB
+    info = CARD_DB.get(name, {})
+    nom_fr = info.get("name_fr", name)
+    mana = info.get("mana", "0")
+    txt = info.get("desc", "")
+   
+    # 2. Préparation du texte de la bulle (le title ne supporte pas le HTML, on reste simple)
+    # On nettoie les sauts de ligne pour que la bulle soit bien formatée par le navigateur
+    bulle_propre = f"{nom_fr} (Mana: {mana}) - {txt}".replace("\n", " ")
+   
+    # 3. Récupération du lien de l'image
+    img_url = get_card(name)
+   
+    # 4. Définition de la largeur (width)
+    # Si width est précisé (ex: 80), on l'applique. Sinon, on prend 100% de la colonne.
+    style_largeur = f"width:{width}px;" if width else "width:100%;"
+
+
+
+
+    # 5. Création du code HTML
+    # L'attribut 'title' crée la bulle. 'cursor:help' change le curseur en point d'interrogation.
+    html_code = f"""
+    <div title="{bulle_propre}" style="cursor:help; {style_largeur} display:inline-block;">
+        <img src="{img_url}" style="width:100%; border-radius:8px;">
+    </div>
+    """
+   
+    # 6. Affichage final
+    st.markdown(html_code, unsafe_allow_html=True)
+    # Au lieu d'une bulle au survol, on affiche un petit texte discret
+    # qui contient la traduction juste au-dessus de l'image
+    #with st.container():
+        #st.markdown(f"**{nom_fr}** ({mana})")
+        #return st.image(get_card(name), width=width, use_container_width=(width is None))
+
+
+
+
+
+
+
+
 def get_card(name):
     # Cette fonction transforme le nom de la carte en lien URL pour l'image
     name_url = name.replace(" ", "+")
     return f"https://api.scryfall.com/cards/named?fuzzy={name_url}&format=image"
 
 
+
+
+
+
+
+
 # --- CONFIGURATION V66 : SIDEBAR + ESPACE AÉRÉ ---
 st.set_page_config(page_title="Magic: Steeven vs Kael", layout="wide")
+
+
+
+
+
+
 
 
 st.markdown("""
@@ -35,6 +220,8 @@ DECKS = {
     "Meule": ["Hedron Crab"]*4 + ["Glimpse the Unthinkable"]*4 + ["Archive Trap"]*4 + ["Tasha's Hideous Laughter"]*4 + ["Jace's Phantasm"]*4 + ["Dark Ritual"]*4 + ["Visions of Beyond"]*3 + ["Polluted Delta"]*4 + ["Watery Grave"]*4 + ["Island"]*15 + ["Swamp"]*10,
     "Burn": ["Ball Lightning"]*4 + ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Skewer the Critics"]*4 + ["Rift Bolt"]*4 + ["Fireblast"]*4 + ["Shock"]*4 + ["Incinerate"]*4 + ["Chain Lightning"]*4 + ["Mountain"]*24
 }
+
+
 
 
 # --- INITIALISATION ---
@@ -79,31 +266,86 @@ def kael_turn():
     st.rerun()
 
 
-    # --- LOGIQUE DE JEU ---
+# --- LOGIQUE DE JEU ---
+
+
+def execute_mill(target_deck, target_grave, amount):
+    """Meule un nombre 'amount' de cartes du deck vers le cimetière."""
+    g = st.session_state.game
+    for _ in range(amount):
+        if g.get(target_deck):
+            card = g[target_deck].pop(0)
+            # Sécurité : force le cimetière à être une liste
+            if not isinstance(g.get(target_grave), list):
+                g[target_grave] = []
+            g[target_grave].append(card)
+
+
+
+
 def play_card(card_index):
-    # On récupère l'état global
     g = st.session_state.game
     card_name = g['p_hand'][card_index]
    
-def play_card(card_index):
-    g = st.session_state.game
-    card_name = g['p_hand'][card_index]
     lands = ["Island", "Swamp", "Polluted Delta", "Watery Grave"]
-   
+
+
+
+
+    # 1. ACTION : On vérifie si c'est un terrain
     if card_name in lands:
-        # 1. On joue le terrain
+        # On retire la carte de la main
         g['p_hand'].pop(card_index)
-        g['p_land'].append({"name": card_name, "tapped": False})
        
-        # 2. EFFET DU CRABE : Meule 3 cartes si un Crabe est là
-        if any(c['name'] == "Hedron Crab" for c in g['p_board']):
-            for _ in range(3):
-                if g['ai_deck']:
-                    card = g['ai_deck'].pop(0)
-                    g['ai_grave'].append(card)
+        # 1. On retire la carte de la main
+        card_obj = g['p_hand'].pop(card_index)
+       
+        # 2. On l'ajoute à tes terrains sur le plateau
+        if 'player_land' not in g:
+            g['player_land'] = []
+        g['player_land'].append(card_obj)
+       
+        # 3. On met à jour ton nouvel historique (en haut à gauche)
+        g['history'].append(f"Steeven joue un terrain : {card_name}")
+       
+        st.rerun()
+        g['p_land'] = []
+        g['p_land'].append({"name": card_name, "tapped": False})
+
+
+
+
+        # 2. EFFET SECONDAIRE : Le Crabe vérifie si on a joué un terrain
+        if any(c['name'] == "Hedron Crab" for c in g.get('p_board', [])):
+            execute_mill('ai_deck', 'ai_grave', 3)
+       
+        # On rafraîchit l'écran
         st.rerun()
        
+        # SÉCURITÉ : On s'assure que p_land est une LISTE
+        if not isinstance(g.get('p_land'), list):
+            g['p_land'] = []
+        g['p_land'].append({"name": card_name, "tapped": False})
+
+
+
+
+        # 2. EFFET DU CRABE
+        if any(c['name'] == "Hedron Crab" for c in g.get('p_board', [])):
+            for _ in range(3):
+                if g.get('ai_deck'):
+                    card = g['ai_deck'].pop(0)
+                   
+                    # CORRECTION CRITIQUE : On force ai_grave à être une LISTE ici
+                    if not isinstance(g.get('ai_grave'), list):
+                        g['ai_grave'] = []
+                   
+                    g['ai_grave'].append(card)
+         
+        st.rerun()
     else:
+        # Ici on ajoutera plus tard la logique pour les sorts et créatures
+        pass
         # 3. CRÉATURE : Demande du mana
         if g['p_mana'] >= 1:
             g['p_hand'].pop(card_index)
@@ -113,66 +355,6 @@ def play_card(card_index):
         else:
             st.error("⚠️ Pas assez de mana ! Engage une Island.")
     st.rerun()
-
-
-# --- 3. CHAMP DE BATAILLE ---
-    st.markdown('<div style="margin-top:25px;"></div>', unsafe_allow_html=True)
-    with st.container():
-        st.markdown('<div style="background:#eceff1; border-radius:12px; border:2px solid #b0bec5; padding:20px; min-height:400px;">', unsafe_allow_html=True)
-       
-        # AFFICHAGE DES TERRAINS (p_land)
-        if g['p_land']:
-            cols_land = st.columns(10)
-            for idx, land in enumerate(g['p_land']):
-                with cols_land[idx % 10]:
-                    angle = 90 if land['tapped'] else 0
-                    st.markdown(f'<img src="{get_card(land["name"])}" style="transform:rotate({angle}deg); width:80px; transition:0.3s;">', unsafe_allow_html=True)
-                    # Vérifie que cette ligne est unique dans tout ton fichier !
-                    if st.button("🔄", key=f"battle_tap_{idx}"):
-                        land['tapped'] = not land['tapped']
-                        g['p_mana'] += 1 if land['tapped'] else -1
-                        st.rerun()
-
-
-        # AFFICHAGE DES CRÉATURES (p_board)
-        if g['p_board']:
-            st.write("---")
-            cols_board = st.columns(6)
-            for idx, crea in enumerate(g['p_board']):
-                with cols_board[idx % 6]:
-                    st.image(get_card(crea['name']), width=100)
-                    st.caption("Creature")
-
-
-        st.markdown('</div>', unsafe_allow_html=True)
-# ==========================================
-# 1. SIDEBAR (ZONES 1, 2, 3)
-# ==========================================
-with st.sidebar:
-    st.header("🎮 MENU MAGIC")
-   
-    # Emplacement futur Chrono
-    st.markdown('<div class="chrono-display">⏱️ 19:20 - OBJECTIF CERVEAU</div>', unsafe_allow_html=True)
-   
-    # Zone 1 : Gestion (Placeholder pour tes futurs boutons)
-    with st.expander("🛠️ OPTIONS & JETONS", expanded=False):
-        st.button("➕ Ajouter Jeton", use_container_width=True)
-        st.button("⚙️ Paramètres", use_container_width=True)
-
-
-    # Zone 2 : Chat
-    st.caption("💬 CHAT")
-    chat_content = "".join([f"<b>{m['u']}</b>: {m['m']}<br>" for m in g['chat'][-10:]])
-    st.markdown(f'<div class="sidebar-box" style="height:250px; overflow-y:auto;">{chat_content}</div>', unsafe_allow_html=True)
-    m_in = st.text_input("...", key="side_chat", label_visibility="collapsed")
-    if st.button("Envoyer", key="side_btn", use_container_width=True):
-        if m_in: g['chat'].append({"u": "Steeven", "m": m_in}); st.rerun()
-
-
-    # Zone 3 : Historique
-    st.caption("📜 ACTIONS")
-    h_txt = "".join([f"• {a}<br>" for a in g.get('history', [])[-10:]])
-    st.markdown(f'<div class="sidebar-box" style="height:150px; overflow-y:auto;">{h_txt}</div>', unsafe_allow_html=True)
 
 
 # ==========================================
@@ -185,10 +367,12 @@ _, center_col, _ = st.columns([0.5, 9, 0.5])
 
 
 with center_col:
- # --- 1. SECTION KAEL (Haut) ---
+# ==========================================
+    # ZONE JOUEUR (KAEL)
+    # ==========================================
     # On définit les colonnes ici pour qu'elles existent avant d'être utilisées
-    col_k_cards, col_k_grave = st.columns([8, 2]) 
-    
+    col_k_cards, col_k_grave = st.columns([8, 2])
+   
     with col_k_cards:
         # Main de Kael (dos des cartes)
         k_cols = st.columns(7)
@@ -196,11 +380,14 @@ with center_col:
             k_cols[i].image("https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/thumb/f/f8/Magic_card_back.jpg/250px-Magic_card_back.jpg", use_container_width=True)
         st.markdown(f'<div style="background:white; padding:5px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-top:10px;"><b>🖥️ KAEL</b> | <span style="color:#ff4757;">❤️ {g["ai_hp"]} HP</span></div>', unsafe_allow_html=True)
 
+
+
+
     with col_k_grave:
         # On récupère les données du cimetière de l'IA
         ai_g = g.get('ai_grave', {'Créas': 0, 'Sorts': 0, 'Lands': 0, 'Artifacts': 0, 'Enchants': 0})
         total_ai = sum(ai_g.values()) if isinstance(ai_g, dict) else len(ai_g)
-        
+       
         st.markdown(f"""
             <div style="border:2px solid #ef5350; border-radius:10px; padding:10px; background:white;">
                 <p style="margin:0; font-size:0.8em; color:#ef5350;"><b>🪦 CIMETIÈRE ({total_ai})</b></p>
@@ -212,82 +399,87 @@ with center_col:
                 <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g.get('Enchants', 0)}</b></p>
             </div>
         """, unsafe_allow_html=True)
-
-    # --- ESPACE ICI ---
-    st.write("") # Crée un saut de ligne standard
-    # ------------------
-
-
-    # --- 2. BOUTONS KAEL (Grisés / Dynamiques) ---
-    ai_status = g.get('ai_status', 'thinking')
-    kb = st.columns([1, 1, 1, 1, 1.5])
-    kb[0].button("⚔️ ATK", key="btn_ai_at", type="primary" if ai_status == 'attacking' else "secondary", disabled=True, use_container_width=True)
-    kb[1].button("🛡️ BLOC", key="btn_ai_bl", type="primary" if ai_status == 'blocking' else "secondary", disabled=True, use_container_width=True)
-    kb[2].button("⚰️ GRAVE", key="btn_ai_gr", disabled=True, use_container_width=True)
-    kb[3].button("🔍 BIBLIO", key="btn_ai_bi", disabled=True, use_container_width=True)
-    kb[4].button("🏁 FIN", key="btn_ai_end", type="primary" if ai_status == 'ending' else "secondary", disabled=True, use_container_width=True)
+        # ... (Code du cimetière finit ici)
+# --- 1. ZONE KAEL (ADVERSAIRE) ---
+    st.write("")
 
 
-# ==========================================
-# ZONE JOUEUR (STEEVEN)
-# ==========================================
-
-# 1. Barre d'infos (Nom + HP à droite comme Kael)
-st.markdown(f"""
-    <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-        <b>👤 STEEVEN</b>
-        <span style="color:#e91e63; font-weight:bold;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
-    </div>
-""", unsafe_allow_html=True)
-
-# 2. Affichage de la Main (Correction de la représentation des cartes)
-if st.session_state.game['p_hand']:
-    # On crée 7 colonnes pour les 7 cartes max en main
-    p_cols = st.columns(7)
-    for i, card_name in enumerate(st.session_state.game['p_hand'][:7]):
-        with p_cols[i]:
-            # Bouton pour jouer la carte
-            if st.button("Jouer", key=f"btn_p_play_{i}"):
-                play_card(i)
-            
-            # ICI : Affichage de l'image de la carte (La ligne manquante !)
-            st.image(get_card(card_name), use_container_width=True)
-else:
-    st.info("Votre main est vide.")
-
-# 3. Suppression du doublon (On s'arrête ici, ne remets pas de deuxième barre STEEVEN)
+    # A. TITRE ET LOGIQUE DES TERRAINS
+    st.markdown("#### 🌍 TERRAINS DE KAEL")
+   
+    # Intelligence pour que Kael joue ses terrains
+    if g.get('turn_owner') == 'ai' and not g.get('ai_land_played'):
+        ai_hand = g.get('ai_hand', [])
+        lands = [c for c in ai_hand if CARD_DB.get(c['name'], {}).get('type') == 'Land']
+        if lands:
+            land_to_play = lands[0]
+            g['ai_land'].append({'name': land_to_play['name'], 'tapped': False})
+            g['ai_hand'].remove(land_to_play)
+            g['ai_land_played'] = True
+            st.rerun()
 
 
-    # --- 2. TES TERRAINS (ALIGNÉS SUR LA MÊME TAILLE) ---
+    # B. AFFICHAGE RÉEL DES TERRAINS (LES IMAGES)
+    ai_lands = g.get('ai_land', [])
+    if ai_lands:
+        cols_ai_l = st.columns(10)
+        for idx, land in enumerate(ai_lands):
+            with cols_ai_l[idx % 10]:
+                img_url = get_card(land["name"])
+                st.markdown(f'<img src="{img_url}" style="width:80px; border-radius:5px; border:1px solid #444;">', unsafe_allow_html=True)
+    else:
+        st.write("*(Kael n'a pas encore de terrains en jeu)*")
+
+
+    st.write("")
+
+
+    # C. SES BOUTONS (POUR LA SYMÉTRIE)
+    kb = st.columns([1, 1, 1, 1, 1])
+    kb[0].button("?? PIOCHE", key="btn_ai_at", disabled=True, use_container_width=True)
+    kb[1].button("🛡️ MAIN 1", key="btn_ai_bl", disabled=True, use_container_width=True)
+    kb[2].button("⚔️ COMBAT", key="btn_ai_gr", disabled=True, use_container_width=True)
+    kb[3].button("🛡️ MAIN 2", key="btn_ai_bi", disabled=True, use_container_width=True)
+    kb[4].button("🏁 FIN", key="btn_ai_end", disabled=True, use_container_width=True)
+
+
+    st.markdown("---") # Séparation vers le CHAMP DE BATAILLE
+
+
+
+
+      # ==========================================
+    # ZONE JOUEUR (steeven)
+    # ==========================================
+
+
+    st.markdown("---")
+   
+    # 1. TES BOUTONS (Bien collés au champ de bataille)
+    # On réduit l'écart avec st.container()
+    with st.container():
+        kb_player = st.columns([1, 1, 1, 1, 1])
+        kb_player[0].button("?? PIOCHE", key="p_draw", use_container_width=True)
+        kb_player[1].button("🛡️ MAIN 1", key="p_m1", use_container_width=True)
+        kb_player[2].button("⚔️ COMBAT", key="p_comb", use_container_width=True)
+        kb_player[3].button("🛡️ MAIN 2", key="p_m2", use_container_width=True)
+        kb_player[4].button("🏁 FIN", key="p_end", use_container_width=True)
+
+
+   
+    # 2. TES TERRAINS (Tout en bas)
     st.markdown("#### 🌍 MES TERRAINS")
+    player_lands = g.get('player_land', [])
+    if player_lands:
+        cols_p_l = st.columns(10)
+        for idx, land in enumerate(player_lands):
+            with cols_p_l[idx % 10]:
+                img_url = get_card(land["name"])
+                st.markdown(f'<img src="{img_url}" style="width:80px; border-radius:5px; border:1px solid #444; margin-bottom:5px;">', unsafe_allow_html=True)
+    else:
+        st.write("*(Aucun terrain en jeu)*")
    
-    if st.session_state.game['p_land']:
-        cols_l = st.columns(10)
-        for idx, land in enumerate(st.session_state.game['p_land']):
-            with cols_l[idx % 10]:
-                angle = 90 if land['tapped'] else 0
-                # Largeur 80px pour tout le monde
-                st.markdown(f'<img src="{get_card(land["name"])}" style="transform:rotate({angle}deg); width:80px; border-radius:5px;">', unsafe_allow_html=True)
-                if st.button("TAP", key=f"t_land_{idx}"):
-                    st.session_state.game['p_land'][idx]['tapped'] = not st.session_state.game['p_land'][idx]['tapped']
-                    st.session_state.game['p_mana'] += 1 if st.session_state.game['p_land'][idx]['tapped'] else -1
-                    st.rerun()
-
-
-    st.markdown("---")
-    # --- 3. TA SECTION (STEEVEN) ---
-    st.markdown("---")
-   
-    # Barre d'actions (Annotation 1)
-    col_atk, col_bloc, col_grave, col_biblio, col_fin = st.columns(5)
-    with col_atk: st.button("⚔️ ATK", use_container_width=True)
-    with col_bloc: st.button("🛡️ BLOC", use_container_width=True)
-    with col_grave: st.button("⚰️ GRAVE", use_container_width=True)
-    with col_biblio: st.button("🔍 BIBLIO", use_container_width=True)
-    with col_fin: st.button("🏁 FIN", use_container_width=True)
-
-
-    st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
 
 
     # Ligne d'info avec PV et Coeur (Annotation 2)
@@ -296,13 +488,8 @@ else:
 
     with col_p_cards:
         # On remet le petit coeur et les PV à côté de ton nom
-        st.markdown(f"""
-            <div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                <b>👤 STEEVEN</b>
-                <span style="color:#e91e63;">❤️ {st.session_state.game.get('p_hp', 20)} HP</span>
-            </div>
-        """, unsafe_allow_html=True)
-       
+        st.markdown(f'<div style="background:white; padding:5px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-top:10px;"><b>🖥️ STEEVEN</b> | <span style="color:#ff4757;">❤️ {g["ai_hp"]} HP</span></div>', unsafe_allow_html=True)
+     
         # Affichage de la main
         if st.session_state.game['p_hand']:
             p_cols = st.columns(7)
@@ -310,19 +497,26 @@ else:
                 with p_cols[i]:
                     if st.button("Jouer", key=f"btn_p_play_{i}"):
                         play_card(i)
-                    st.image(get_card(card_name), width=150)
+                    show_card(card_name)
+
+
+
 
 # Ligne d'info avec ton Cimetière
     col_p_cards, col_p_grave = st.columns([8, 2])
 
-    with col_p_cards:
-        st.markdown(f'<div style="background:white; padding:10px 15px; border-radius:8px; border:1px solid #dfe4ea; margin-bottom:10px; display:flex; justify-content:space-between;"><b>👤 STEEVEN</b><span style="color:#e91e63;">❤️ {g.get("p_hp", 20)} HP</span></div>', unsafe_allow_html=True)
+
+
+
         # ... (ton code pour afficher la main ici) ...
+
+
+
 
     with col_p_grave:
         p_g = g.get('p_grave', {'Créas': 0, 'Sorts': 0, 'Lands': 0, 'Artifacts': 0, 'Enchants': 0})
         total_p = sum(p_g.values()) if isinstance(p_g, dict) else len(p_g)
-        
+       
         st.markdown(f"""
             <div style="border:2px solid #42a5f5; border-radius:10px; padding:10px; background:white;">
                 <p style="margin:0; font-size:0.8em; color:#1e88e5;"><b>🪦 CIMETIÈRE ({total_p})</b></p>
@@ -334,3 +528,9 @@ else:
                 <p style="margin:0; font-size:0.8em;">✨ Enchantement: <b>{g.get('Enchants', 0)}</b></p>
             </div>
         """, unsafe_allow_html=True)
+
+
+
+
+
+

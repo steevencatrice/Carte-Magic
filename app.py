@@ -241,25 +241,6 @@ DECKS = {
     "Burn (Rouge)":    ["Ball Lightning"]*4 + ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Skewer the Critics"]*4 + ["Rift Bolt"]*4 + ["Fireblast"]*4 + ["Shock"]*4 + ["Incinerate"]*4 + ["Chain Lightning"]*4 + ["Mountain"]*24
 }
 
-# --- CONFIGURATION DANS LA SIDEBAR ---
-st.sidebar.header("🕹️ OPTIONS DU DUEL")
-
-# Sélection des decks (basée sur les clés de ton dictionnaire DECKS)
-# On utilise list(DECKS.keys()) pour que ça s'actualise tout seul
-choix_p = st.sidebar.selectbox("Mon Deck (Steeven) :", list(DECKS.keys()), index=0)
-choix_ai = st.sidebar.selectbox("Deck de Kael :", list(DECKS.keys()), index=1)
-
-st.sidebar.markdown("---")
-
-# Réglage de la difficulté (de 1 à 10)
-diff_ai = st.sidebar.select_slider(
-    "Niveau de l'IA (Kael) :",
-    options=range(1, 11),
-    value=5
-)
-
-st.sidebar.markdown("---")
-
 
 # --- INITIALISATION DYNAMIQUE ---
 if st.sidebar.button("Début de la partie"):

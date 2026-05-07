@@ -110,13 +110,13 @@ CARD_DB = {
         "type": "Terrain",
         "mana": "💧",
         "desc": "Terrain de base : Génère 1 mana Bleu."
-   },, # <--- La virgule doit être ici
+   },
     "Swamp": {
         "name_fr": "Marais",
         "type": "Terrain",
         "mana": "💀",
         "desc": "Terrain de base : Génère 1 mana Noir."
-    }
+   },
     "Archimage's Charm":   {"name_fr": "Charme de l'archimage",   "type": "Sort",     "mana": "💧💧💧", "desc": "Contre / Pioche 2 / Vole coût 1."},
     "Counterspell":        {"name_fr": "Contresort",              "type": "Sort",     "mana": "💧💧",   "desc": "Annule le sort ciblé."},
     "Guile":               {"name_fr": "Ruse",                    "type": "Créature", "mana": "💧💧💧3", "desc": "6/6 imblocable. Si tu contres, joue le sort gratos."},

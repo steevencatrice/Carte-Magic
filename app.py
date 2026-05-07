@@ -244,21 +244,6 @@ DECKS = {
 
 # --- INITIALISATION DYNAMIQUE ---
     
-    st.session_state.game = {
-        'started': True, 
-        'p_hp': 20, 'ai_hp': 20, 'p_mana': 0,
-        'p_deck': p_deck[7:], 'p_hand': p_deck[:7],
-        'p_land': [], 'p_board': [],
-        'p_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0},
-        'ai_deck': ai_deck[7:], 'ai_hand': ai_deck[:7],
-        'ai_land': [], 'ai_board': [],
-        'ai_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0},
-        'history': ["Début de la partie"],
-        'chat': [{"u": "Kael", "m": "Bonne chance Steeven !"}],
-        'phase': "PRINCIPALE 1",
-        'diff_ai': diff_ai
-    }
-    st.rerun()
 
 # --- ÉCRAN D'ACCUEIL (MENU) ---
 if 'game' not in st.session_state or not st.session_state.game.get('started', False):

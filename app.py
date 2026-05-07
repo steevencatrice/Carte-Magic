@@ -262,28 +262,14 @@ st.sidebar.markdown("---")
 
 
 # --- INITIALISATION DYNAMIQUE ---
-if st.sidebar.button("Début de la partie") or 'game' not in st.session_state:
-    # On récupère les decks basés sur les sélections de la sidebar
+if st.sidebar.button("Début de la partie"):
     p_deck = DECKS[choix_p][:]
     ai_deck = DECKS[choix_ai][:]
-    
     random.shuffle(p_deck)
     random.shuffle(ai_deck)
     
-    # On enregistre tout dans le session_state
     st.session_state.game = {
-        'p_deck': p_deck,
-        'ai_deck': ai_deck,
-        'p_hand': [p_deck.pop() for _ in range(7)],
-        'ai_hand': [ai_deck.pop() for _ in range(7)],
-        'p_hp': 20,
-        'ai_hp': 20,
-        'diff_ai': diff_ai, # On stocke la difficulté ici pour plus tard
-        'turn': 'player'
-    }
-
-
-    st.session_state.game = {
+        'started': True, 
         'p_hp': 20, 'ai_hp': 20, 'p_mana': 0,
         'p_deck': p_deck[7:], 'p_hand': p_deck[:7],
         'p_land': [], 'p_board': [],
@@ -293,33 +279,23 @@ if st.sidebar.button("Début de la partie") or 'game' not in st.session_state:
         'ai_grave': {'Créas': 0, 'Sorts': 0, 'Lands': 0},
         'history': ["Début de la partie"],
         'chat': [{"u": "Kael", "m": "Bonne chance Steeven !"}],
-        'phase': "PRINCIPALE 1"
+        'phase': "PRINCIPALE 1",
+        'diff_ai': diff_ai
     }
+    st.rerun()
 
+# --- ÉCRAN D'ACCUEIL OU JEU ---
+if 'game' not in st.session_state or not st.session_state.game.get('started', False):
+    st.title("⚔️ MAGIC THE GATHERING")
+    st.subheader("Menu Principal")
+    st.info(f"Steeven (**{choix_p}**) VS Kael (**{choix_ai}**)")
+    st.write("Sélectionne tes options dans la barre latérale puis clique sur le bouton pour lancer le duel.")
+    st.stop()
 
 g = st.session_state.game # On crée un raccourci pour plus tard
 
-# Au début de ton affichage principal
-if 'game' not in st.session_state:
-    # --- ÉCRAN D'ACCUEIL ---
-    st.title("⚔️ MAGIC : THE GATHERING")
-    st.subheader("Préparez votre duel contre Kael")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.info(f"Votre deck : **{choix_p}**")
-    with col2:
-        st.warning(f"Deck de Kael : **{choix_ai}**")
-    
-    st.write("Réglages terminés ? Appuyez sur le bouton dans la barre latérale pour commencer.")
-    
-else:
-    # --- PLATEAU DE JEU (Tout ton code actuel d'affichage) ---
-    # Ici tu mets tout ce qui affiche les cartes, les HP, etc.
-    render_battlefield()
 
 # --- LES FONCTIONS (Le Cerveau du Jeu) ---
-
 
 def kael_turn():
     # 1. Kael pioche
@@ -336,7 +312,6 @@ def kael_turn():
 
 
 # --- LOGIQUE DE JEU ---
-
 
 def execute_mill(target_deck, target_grave, amount):
     """Meule un nombre 'amount' de cartes du deck vers le cimetière."""

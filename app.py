@@ -1,5 +1,8 @@
 import streamlit as st
 
+# Initialisation des stats globales si elles n'existent pas
+if 'stats' not in st.session_state:
+    st.session_state.stats = {'victoires': 0, 'defaites': 0}
 
 # --- ÉTAPE 1 : ON DÉFINIT LE SAC À DOS 'g' (OBLIGATOIRE ICI) ---
 g = st.session_state
@@ -241,14 +244,19 @@ DECKS = {
     "Burn (Rouge)":    ["Ball Lightning"]*4 + ["Lightning Bolt"]*4 + ["Lava Spike"]*4 + ["Skewer the Critics"]*4 + ["Rift Bolt"]*4 + ["Fireblast"]*4 + ["Shock"]*4 + ["Incinerate"]*4 + ["Chain Lightning"]*4 + ["Mountain"]*24
 }
 
-
 # --- INITIALISATION DYNAMIQUE ---
     
-
 # --- ÉCRAN D'ACCUEIL (MENU) ---
 if 'game' not in st.session_state or not st.session_state.game.get('started', False):
     st.title("⚔️ MAGIC THE GATHERING")
-    st.subheader("Menu Principal")
+   st.subheader("Menu Principal")
+    
+    # --- ÉTAPE 2 : AFFICHAGE DES STATS ---
+    col_stats1, col_stats2 = st.columns(2)
+    col_stats1.metric("🏆 Victoires", st.session_state.stats['victoires'])
+    col_stats2.metric("❌ Défaites", st.session_state.stats['defaites'])
+    
+    st.write("---") # Une petite ligne de séparation pour faire propre
     
     col_a, col_b = st.columns(2)
     with col_a:
